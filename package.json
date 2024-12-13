@@ -7,21 +7,20 @@
   "scripts": {
     "serve": "enact serve",
     "pack": "enact pack",
-    "pack-p": "./node_modules/.bin/enact pack -p",
+    "pack-p": "enact pack -p",
     "watch": "enact pack --watch",
     "clean": "enact clean",
     "lint": "enact lint .",
     "license": "enact license",
     "test": "enact test",
     "test-watch": "enact test --watch",
-    "start": "node server.js",
-    "heroku-postbuild": "npm run pack-p"
+    "start": "node server.js"
   },
   "license": "UNLICENSED",
   "private": true,
   "repository": "",
   "engines": {
-    "node": "18.x",
+    "node": "20.x",
     "npm": ">=6.9.0"
   },
   "enact": {
@@ -36,7 +35,6 @@
     "dist/*"
   ],
   "dependencies": {
-    "@enact/cli": "^5.0.0",
     "@enact/core": "^4.8.0",
     "@enact/i18n": "^4.7.8",
     "@enact/sandstone": "^2.8.0",
