@@ -21,6 +21,7 @@
   "private": true,
   "repository": "",
   "engines": {
+    "node": "20.x",
     "npm": ">=6.9.0"
   },
   "enact": {
@@ -31,7 +32,6 @@
   },
   "eslintIgnore": [
     "node_modules/*",
-    "build/*",
     "dist/*"
   ],
   "dependencies": {
