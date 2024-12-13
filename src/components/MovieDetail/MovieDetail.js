@@ -20,7 +20,7 @@ const MovieDetailBase = ({ selectedMovieId, setSidebarDisplay }) => {
 
   useEffect(() => {
     fetch(
-      `https://quiet-coast-60557-5151c2363932.herokuapp.com/api/movies/${selectedMovieId}`
+      `${process.env.REACT_APP_API_URL}/api/movies/${selectedMovieId}`
     )
       .then((response) => response.json())
       .then((data) => setMovie(data.data))

@@ -10,7 +10,7 @@ const TvShowDetail = ({ selectedMovieId }) => {
 
   useEffect(() => {
     fetch(
-      `https://quiet-coast-60557-5151c2363932.herokuapp.com/api/tvShows/${selectedMovieId}`
+      `${process.env.REACT_APP_API_URL}/api/tvShows/${selectedMovieId}`
     )
       .then((response) => response.json())
       .then((data) => setTvShow(data))

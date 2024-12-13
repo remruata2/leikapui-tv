@@ -7,7 +7,7 @@ const MoviesCarousel = ({ setPanelIndex, setSelectedMovieId }) => {
   const [items, setItems] = useState([]);
 
   useEffect(() => {
-    fetch("https://quiet-coast-60557-5151c2363932.herokuapp.com/api/movies")
+    fetch(`${process.env.REACT_APP_API_URL}/api/movies`)
       .then((response) => response.json())
       .then((data) => setItems(data.data))
       .catch((error) => console.error("Error:", error));

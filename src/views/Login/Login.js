@@ -11,7 +11,7 @@ const Login = () => {
   useEffect(() => {
     const fetchDeviceCode = async () => {
       try {
-        const response = await fetch("http://localhost:4000/auth/device-code", {
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/auth/device-code`, {
           method: "POST",
         });
         const data = await response.json();
@@ -19,7 +19,7 @@ const Login = () => {
 
         // Polling for authentication
         const pollInterval = setInterval(async () => {
-          const pollResponse = await fetch("http://localhost:4000/auth/poll", {
+          const pollResponse = await fetch(`${process.env.REACT_APP_API_URL}/auth/poll`, {
             method: "POST",
             body: JSON.stringify({ device_code: data.device_code }),
             headers: {

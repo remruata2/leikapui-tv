@@ -7,7 +7,7 @@ const TvShowsCarousel = ({ setPanelIndex, setSelectedMovieId }) => {
   const [items, setItems] = useState([]);
 
   useEffect(() => {
-    fetch("https://quiet-coast-60557-5151c2363932.herokuapp.com/api/tvShows")
+    fetch(`${process.env.REACT_APP_API_URL}/api/tvShows`)
       .then((response) => response.json())
       .then((data) => setItems(data))
       .catch((error) => console.error("Error:", error));

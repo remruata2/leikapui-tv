@@ -26,7 +26,7 @@ const AppBase = ({ open, onToggleSidebar, ...rest }) => {
   useEffect(() => {
     const checkAuthentication = async () => {
       try {
-        const response = await fetch("http://localhost:4000/isAuthenticated", {
+        const response = await fetch(`${process.env.REACT_APP_API_URL}/isAuthenticated`, {
           credentials: "include", // Include cookies in the request
         });
         const data = await response.json();
@@ -41,7 +41,7 @@ const AppBase = ({ open, onToggleSidebar, ...rest }) => {
 
   const onLogout = async () => {
     try {
-      await fetch("http://localhost:4000/logout", {
+      await fetch(`${process.env.REACT_APP_API_URL}/logout`, {
         credentials: "include",
       });
       setIsLoggedIn(false);

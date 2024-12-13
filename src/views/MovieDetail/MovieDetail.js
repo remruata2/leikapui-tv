@@ -19,7 +19,7 @@ const MovieDetailBase = ({ selectedMovieId, setSidebarDisplay }) => {
 
   useEffect(() => {
     fetch(
-      `https://quiet-coast-60557-5151c2363932.herokuapp.com/api/movies/${selectedMovieId}`
+      `${process.env.REACT_APP_API_URL}/api/movies/${selectedMovieId}`
     )
       .then((response) => response.json())
       .then((data) => setMovie(data.data))
@@ -127,7 +127,7 @@ const MovieDetailBase = ({ selectedMovieId, setSidebarDisplay }) => {
         </Scroller>
       </Panel>
       <Panel>
-        <VideoPlayerComponent source="http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4" />
+        <VideoPlayerComponent source={process.env.REACT_APP_SAMPLE_VIDEO_URL || "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4"} />
       </Panel>
     </Panels>
   );

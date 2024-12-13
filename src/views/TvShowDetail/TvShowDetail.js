@@ -20,7 +20,7 @@ const TvShowBase = ({ selectedMovieId, setSidebarDisplay }) => {
   const SpottableImageItem = Spottable(ImageItem);
 
   useEffect(() => {
-    fetch(`http://localhost:4000/api/tvShows/${selectedMovieId}`)
+    fetch(`${process.env.REACT_APP_API_URL}/api/tvShows/${selectedMovieId}`)
       .then((response) => response.json())
       .then((data) => setTvShow(data))
       .catch((error) => console.error("Error:", error));
