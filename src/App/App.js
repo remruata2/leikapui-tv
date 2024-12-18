@@ -26,9 +26,12 @@ const AppBase = ({ open, onToggleSidebar, ...rest }) => {
   useEffect(() => {
     const checkAuthentication = async () => {
       try {
-        const response = await fetch(`${process.env.REACT_APP_API_URL}/isAuthenticated`, {
-          credentials: "include", // Include cookies in the request
-        });
+        const response = await fetch(
+          `${process.env.REACT_APP_API_URL}/isAuthenticated`,
+          {
+            credentials: "include", // Include cookies in the request
+          }
+        );
         const data = await response.json();
         setIsLoggedIn(data.isAuthenticated);
       } catch (error) {

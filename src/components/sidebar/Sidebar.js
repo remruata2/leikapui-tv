@@ -1,105 +1,104 @@
-import { Cell } from "@enact/ui/Layout";
-import Item from "@enact/sandstone/Item";
-import Spotlight from "@enact/spotlight";
-import css from "./Sidebar.module.less";
-import {
-  FaFilm,
-  FaTv,
-  FaSignOutAlt,
-  FaHome,
-  FaSignInAlt,
-} from "react-icons/fa"; // Import icons
 import { useState } from "react";
+import css from "./Sidebar.module.less";
+import { RiHome5Fill, RiMovie2Fill, RiTvFill } from "react-icons/ri";
+import { BiLogOut } from "react-icons/bi";
+import Item from "@enact/sandstone/Item";
+import { Cell } from "@enact/ui/Layout";
+import SpotlightContainerDecorator from "@enact/spotlight/SpotlightContainerDecorator";
 
 const Sidebar = ({
   open,
   setPanelIndex,
-  panelIndex,
   onToggleSidebar,
+  panelIndex,
+  className,
   isLoggedIn,
   onLogout,
   sideBarDisplay,
-  ...props
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
+
+  const menuItems = [
+    {
+      icon: <RiHome5Fill className={css.icon} />,
+      label: "Home",
+      index: 0,
+    },
+    {
+      icon: <RiMovie2Fill className={css.icon} />,
+      label: "Movies",
+      index: 3,
+    },
+    {
+      icon: <RiTvFill className={css.icon} />,
+      label: "TV Shows",
+      index: 4,
+    },
+  ];
+
+  const handleItemClick = (index, panelIdx) => {
+    setCurrentIndex(index);
+    setPanelIndex(panelIdx);
+  };
+
   const handleSidebarFocus = () => {
     onToggleSidebar({ open: true });
   };
 
-  if (open) {
-    const currentNavLink = document.querySelector(".nav-link.current");
-    // Focus the topmost navigation link
-    if (currentNavLink) {
-      currentNavLink.focus();
-    }
-  }
-
   const handleSidebarBlur = () => {
     onToggleSidebar({ open: false });
   };
+
+  if (!sideBarDisplay) {
+    return null;
+  }
+
   return (
     <Cell
-      component="nav"
-      size={open ? "20%" : "7%"}
+      className={`${css.sidebar} ${className} ${open ? 'sideBarOpened' : ''}`}
       onFocus={handleSidebarFocus}
       onBlur={handleSidebarBlur}
-      {...props}
+      spotlightId="sidebar"
+      size={open ? "20%" : "7%"}
     >
-      <Item
-        onClick={() => setPanelIndex(0) && setCurrentIndex(0)}
-        className={currentIndex === 0 ? "nav-link current" : "nav-link"}
-      >
-        {open ? (
-          <>
-            <FaHome /> Home
-          </>
-        ) : (
-          <FaHome />
+      <div className={css.menuContainer}>
+        {menuItems.map((item, index) => (
+          <Item
+            key={index}
+            onClick={() => handleItemClick(index, item.index)}
+            className={`${css.menuItem} ${
+              currentIndex === index ? css.active : ""
+            }`}
+            spotlightId={`menu-item-${index}`}
+          >
+            <div className={css.itemContent}>
+              {item.icon}
+              <span className={css.label}>{item.label}</span>
+            </div>
+          </Item>
+        ))}
+        {isLoggedIn && (
+          <Item
+            onClick={onLogout}
+            className={css.menuItem}
+            spotlightId="logout-item"
+          >
+            <div className={css.itemContent}>
+              <BiLogOut className={css.icon} />
+              <span className={css.label}>Logout</span>
+            </div>
+          </Item>
         )}
-      </Item>
-      <Item
-        onClick={() => setPanelIndex(3) && setCurrentIndex(3)}
-        className={currentIndex === 3 ? "nav-link current" : "nav-link"}
-      >
-        {open ? (
-          <>
-            <FaFilm /> Movies
-          </>
-        ) : (
-          <FaFilm />
-        )}
-      </Item>
-      <Item
-        onClick={() => setPanelIndex(4) && setCurrentIndex(4)}
-        className={currentIndex === 4 ? "nav-link current" : "nav-link"}
-      >
-        {open ? (
-          <>
-            <FaTv /> Tv Shows
-          </>
-        ) : (
-          <FaTv />
-        )}
-      </Item>
-      <Item
-        onClick={
-          isLoggedIn ? onLogout : () => setPanelIndex(5) && setCurrentIndex(5)
-        }
-        className={currentIndex === 5 ? "nav-link current" : "nav-link"}
-      >
-        {open ? (
-          <>
-            {isLoggedIn ? <FaSignOutAlt /> : <FaSignInAlt />}{" "}
-            {isLoggedIn ? "Logout" : "Login"}
-          </>
-        ) : isLoggedIn ? (
-          <FaSignOutAlt />
-        ) : (
-          <FaSignInAlt />
-        )}
-      </Item>
+      </div>
     </Cell>
   );
 };
 
-export default Sidebar;
+// Configure SpotlightContainerDecorator with specific settings for sidebar
+const SidebarDecorator = SpotlightContainerDecorator({
+  enterTo: "last-focused",
+  defaultElement: '[spotlightId="menu-item-0"]',
+  preserveId: true
+});
+
+export default SidebarDecorator(Sidebar);

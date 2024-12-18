@@ -1,1 +1,77 @@
 /* Sidebar.module.less */
+
+.sidebar {
+  height: 100vh;
+  background-color: #1a1a1a;
+  transition: all 0.3s ease;
+  overflow: hidden;
+
+  .menuContainer {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .menuItem {
+    border-radius: 8px;
+    padding: 0.5rem;
+    transition: all 0.3s ease;
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+
+    &:hover,
+    &:focus {
+      background-color: rgba(255, 255, 255, 0.1);
+      
+      .itemContent {
+        .icon {
+          color: #1a1a1a;
+        }
+        .label {
+          color: #1a1a1a;
+        }
+      }
+    }
+
+    &.active {
+      background-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .itemContent {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      width: 100%;
+
+      .icon {
+        font-size: 54px;
+        min-width: 54px;
+        color: white;
+        transition: color 0.3s ease;
+      }
+
+      .label {
+        font-size: 50px;
+        color: white;
+        white-space: nowrap;
+        opacity: 1;
+        transition: all 0.3s ease;
+      }
+    }
+  }
+}
+
+// Show labels when sidebar is open
+:global(.sideBarOpened) {
+  .sidebar {
+    .menuItem {
+      .itemContent {
+        .label {
+          opacity: 1;
+        }
+      }
+    }
+  }
+}
