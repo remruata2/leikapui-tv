@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { BodyText } from "@enact/sandstone/BodyText";
 import Scroller from "@enact/ui/Scroller";
-import ImageItem, { ImageItemBase } from "@enact/ui/ImageItem";
+import ImageItem from "@enact/ui/ImageItem";
 import Heading from "@enact/sandstone/Heading";
 import Spottable from "@enact/spotlight/Spottable";
 import ThemeDecorator from "@enact/sandstone/ThemeDecorator";
@@ -31,6 +31,14 @@ const TvShowBase = ({ selectedMovieId, setSidebarDisplay }) => {
     setSidebarDisplay(false); // Assuming setSidebarDisplay is the function to hide the sidebar
   };
 
+  const handleEpisodeClick = () => {
+    setIndex(1);
+  };
+
+  const handleTabChange = (e) => {
+    setIndex(e.index);
+  };
+
   if (!tvShow) {
     return (
       <div style={{ margin: "100px" }}>
@@ -38,8 +46,6 @@ const TvShowBase = ({ selectedMovieId, setSidebarDisplay }) => {
       </div>
     );
   }
-
-  const itemWidth = window.innerWidth / 4;
 
   tvShow.seasons.forEach((season) => {
     season.episodes.forEach((episode) => {
@@ -50,7 +56,7 @@ const TvShowBase = ({ selectedMovieId, setSidebarDisplay }) => {
   return (
     <Panels
       index={index}
-      onSelectBreadcrumb={(e) => setIndex(e.index)}
+      onSelectBreadcrumb={handleTabChange}
       onBack={() => setIndex(0)}
     >
       <Panel>
@@ -141,7 +147,7 @@ const TvShowBase = ({ selectedMovieId, setSidebarDisplay }) => {
                         src={episode.horizontal_poster}
                         className={css.spottableImageItem}
                         style={{ width: 400, height: 300 }}
-                        onClick={() => setIndex(1)}
+                        onClick={handleEpisodeClick}
                       >
                         <div className={css.episodeTitle}>
                           <span style={{ color: "red" }}>

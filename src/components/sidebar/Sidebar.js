@@ -10,7 +10,6 @@ const Sidebar = ({
   open,
   setPanelIndex,
   onToggleSidebar,
-  panelIndex,
   className,
   isLoggedIn,
   onLogout,
@@ -49,23 +48,26 @@ const Sidebar = ({
     onToggleSidebar({ open: false });
   };
 
+  const handleMenuItemClick = (index, panelIdx) => {
+    handleItemClick(index, panelIdx);
+  };
+
   if (!sideBarDisplay) {
     return null;
   }
 
   return (
     <Cell
-      className={`${css.sidebar} ${className} ${open ? 'sideBarOpened' : ''}`}
+      className={`${css.sidebar} ${className} ${open ? "sideBarOpened" : ""}`}
       onFocus={handleSidebarFocus}
       onBlur={handleSidebarBlur}
-      spotlightId="sidebar"
       size={open ? "20%" : "7%"}
     >
       <div className={css.menuContainer}>
         {menuItems.map((item, index) => (
           <Item
             key={index}
-            onClick={() => handleItemClick(index, item.index)}
+            onClick={() => handleMenuItemClick(index, item.index)}
             className={`${css.menuItem} ${
               currentIndex === index ? css.active : ""
             }`}
@@ -98,7 +100,7 @@ const Sidebar = ({
 const SidebarDecorator = SpotlightContainerDecorator({
   enterTo: "last-focused",
   defaultElement: '[spotlightId="menu-item-0"]',
-  preserveId: true
+  preserveId: true,
 });
 
 export default SidebarDecorator(Sidebar);

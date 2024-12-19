@@ -57,7 +57,6 @@ const HomeBanner = ({ setPanelIndex, setSelectedMovieId }) => {
   const handlePlayClick = useCallback(
     (banner) => {
       console.log("Play button clicked");
-      console.log("Banner Data:", banner);
 
       if (banner) {
         const movieId = banner.id || banner.movie_id || banner._id;
@@ -74,6 +73,10 @@ const HomeBanner = ({ setPanelIndex, setSelectedMovieId }) => {
     [setPanelIndex, setSelectedMovieId]
   );
 
+  const handleButtonClick = (banner) => {
+    handlePlayClick(banner);
+  };
+
   if (error || !bannerData.length) {
     return null;
   }
@@ -85,7 +88,7 @@ const HomeBanner = ({ setPanelIndex, setSelectedMovieId }) => {
     >
       <Panels
         index={currentIndex}
-        onIndexChange={setCurrentIndex}
+        onChange={({ index }) => setCurrentIndex(index)}
         className={css.bannerPanels}
       >
         {bannerData.map((banner, index) => (
@@ -108,12 +111,12 @@ const HomeBanner = ({ setPanelIndex, setSelectedMovieId }) => {
                   className={css.playButton}
                   icon="playcircle"
                   size="large"
-                  onClick={() => handlePlayClick(banner)}
+                  onClick={() => handleButtonClick(banner)}
                   backgroundOpacity="transparent"
                   spotlightId={`play-button-${index}`}
                   css={{
                     button: css.buttonRoot,
-                    icon: css.buttonIcon
+                    icon: css.buttonIcon,
                   }}
                 >
                   <div className={css.playButtonContent}>Play</div>
