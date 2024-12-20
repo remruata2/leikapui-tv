@@ -1,55 +1,191 @@
 @import "~@enact/sandstone/styles/mixins.less";
 
 .movieDetail {
+  min-height: 100vh;
+  background-size: cover;
+  background-position: center;
+  position: relative;
   display: flex;
-  flex-direction: row;
-  margin: 40px;
-  margin-left: 100px;
+  align-items: center;
+  padding: 1rem;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+      90deg,
+      rgba(0, 0, 0, 0.8) 0%,
+      rgba(0, 0, 0, 0.6) 50%,
+      rgba(0, 0, 0, 0.4) 100%
+    );
+  }
 
   .horizontal_poster {
-    flex: 50%;
+    flex: 1;
 
     .moviePoster {
       width: 100%;
       height: 100%;
       object-fit: cover;
-      opacity: 0.5;
+      opacity: 0.7;
     }
   }
 
   .content {
-    margin-left: 40px;
+    position: relative;
+    max-width: 40%;
+    color: white;
+    z-index: 1;
+    margin-left: auto;
     display: flex;
     flex-direction: column;
-    flex: 50%;
+    flex: 1;
     padding: 30px;
+    border-radius: 10px;
 
-    .playButton {
-      background-color: red;
-      padding: 0px;
-      width: 90%;
-      height: 200px;
-      margin-top: 20px;
-      cursor: pointer;
-      border-radius: 20px;
-      .focus({
-            background-color: #e6e6e6; // lightgrey
-            color: black;
-        });
+    .movieTitle {
+      font-size: 2rem;
+      font-weight: bold;
+      margin-bottom: 1.5rem;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
     }
 
-    .subContent {
+    .badgeSection {
       display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
       flex-direction: row;
-      padding: 20px;
+    }
 
-      .dataTitle {
-        flex: 30%;
-        color: rgb(236, 41, 6);
+    .badge {
+      background-color: rgba(255, 255, 255, 0.1);
+      padding: 0.2rem 0.2rem;
+      border-radius: 2rem;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      flex: 50%;
+      display: flex;
+      transition: background-color 0.2s ease;
+
+      &:focus {
+        background-color: rgba(255, 255, 255, 0.2);
       }
-      .dataValue {
-        flex: 50%;
-        object-fit: contain;
+
+      .icon {
+        color: #e50914;
+      }
+      .tagText {
+        font-size: 1rem;
+      }
+    }
+
+    .genresSection {
+      margin-bottom: 1rem;
+    }
+
+    .genreTag {
+      display: inline-flex;
+      align-items: center;
+      background-color: #e50914;
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 2rem;
+      margin-right: 0.5rem;
+      font-size: 0.9rem;
+      transition: transform 0.2s ease;
+
+      &:hover,
+      &:focus {
+        transform: scale(1.05);
+        background-color: darken(#e50914, 10%);
+      }
+    }
+
+    .descriptionSection {
+      margin-bottom: 1rem;
+      .summaryHeading {
+        display: flex;
+        align-items: center;
+        gap: 0.2rem;
+        color: #e50914;
+
+        .icon {
+          font-size: 1.2rem;
+        }
+      }
+
+      .summaryText {
+        font-size: 1rem;
+        line-height: 1.6;
+        opacity: 0.9;
+        max-width: 800px;
+      }
+    }
+
+    .metadataSection {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 1rem;
+      border-radius: 1rem;
+    }
+
+    .metadataItem {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.8rem;
+
+      .icon {
+        color: #e50914;
+        font-size: 1.2rem;
+      }
+
+      .label {
+        opacity: 0.7;
+        font-size: 0.9rem;
+      }
+
+      .value {
+        font-size: 0.7rem;
+        font-weight: bold;
+      }
+    }
+
+    .actionSection {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .playButton {
+      background-color: #e50914;
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      font-size: 1.2rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.8rem;
+      transition: all 0.2s ease;
+      cursor: pointer;
+
+      &:hover,
+      &:focus {
+        transform: scale(1.05);
+        background-color: darken(#e50914, 10%);
+        border: 0.1rem solid white;
+      }
+
+      .playIcon {
+        font-size: 1.5rem;
       }
     }
   }
@@ -70,8 +206,19 @@
   padding: 50px;
   width: 50%;
   text-align: justify;
+  margin-top: 20px;
 }
+
 .videoPlayer {
   height: 200px;
   width: 50%;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-size: 1.2rem;
+  color: white;
 }
