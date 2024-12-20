@@ -90,7 +90,7 @@ const AppBase = ({ open, onToggleSidebar, ...rest }) => {
         setPanelIndex={setPanelIndex}
         onToggleSidebar={onToggleSidebar}
         panelIndex={panelIndex}
-        className={css.sidebar}
+        className={`${css.sidebar} ${open ? css.sideBarOpened : ''}`}
         isLoggedIn={isLoggedIn}
         onLogout={onLogout}
         sideBarDisplay={sideBarDisplay}
@@ -99,7 +99,7 @@ const AppBase = ({ open, onToggleSidebar, ...rest }) => {
       <Panels
         {...rest}
         onKeyDown={handlePanelsKeyDown}
-        className={open ? css.sideBarOpened : css.sideBarClosed}
+        className={css.sideBarClosed}
         index={panelIndex}
         onBack={handleBack}
       >
