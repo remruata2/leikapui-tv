@@ -6,6 +6,22 @@
   transition: all 0.3s ease;
   overflow: hidden;
 
+  &.closed {
+    .menuItem {
+      .itemContent {
+        justify-content: center;
+        
+        .label {
+          display: none;
+        }
+        
+        .icon {
+          margin: 0;
+        }
+      }
+    }
+  }
+
   .menuContainer {
     padding: 1rem;
     display: flex;
@@ -44,6 +60,7 @@
       align-items: center;
       gap: 1rem;
       width: 100%;
+      transition: all 0.3s ease;
 
       .icon {
         font-size: 54px;

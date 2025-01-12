@@ -58,10 +58,10 @@ const Sidebar = ({
 
   return (
     <Cell
-      className={`${css.sidebar} ${className} ${open ? "sideBarOpened" : ""}`}
+      className={`${css.sidebar} ${!open ? css.closed : ''} ${className || ''}`}
       onFocus={handleSidebarFocus}
       onBlur={handleSidebarBlur}
-      size={open ? "20%" : "10%"}
+      shrink
     >
       <div className={css.menuContainer}>
         {menuItems.map((item, index) => (
