@@ -37,14 +37,17 @@ body {
   padding-left: 0;
   margin-left: 0;
   opacity: 0.8;
+  z-index: 1000;
+  width: 7%;
+
+  &.sideBarOpened {
+    width: 20%;
+  }
 }
 
 .sideBarOpened {
   position: absolute;
-  margin: 50px;
-  transform: translateX(
-    20%
-  ); /* Push the main content offscreen by the width of the sidebar */
+  left: 0;
 }
 
 .sideBarClosed {
