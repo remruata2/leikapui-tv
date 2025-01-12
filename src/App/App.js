@@ -10,11 +10,9 @@ import MovieDetail from "../views/MovieDetail/MovieDetail";
 import TvShowDetail from "../views/TvShowDetail/TvShowDetail";
 import Login from "../views/Login/Login";
 import css from "./App.module.less";
-import Spottable from "@enact/spotlight/Spottable";
 import Changeable from "@enact/ui/Changeable";
 import PropTypes from "prop-types";
 import Popup from "@enact/sandstone/Popup";
-import Spotlight from "@enact/spotlight";
 
 const AppBase = ({ open, onToggleSidebar, ...rest }) => {
   const [panelIndex, setPanelIndex] = useState(0);
@@ -26,9 +24,12 @@ const AppBase = ({ open, onToggleSidebar, ...rest }) => {
   useEffect(() => {
     const checkAuthentication = async () => {
       try {
-        const response = await fetch(`${process.env.REACT_APP_API_URL}/isAuthenticated`, {
-          credentials: "include", // Include cookies in the request
-        });
+        const response = await fetch(
+          `${process.env.REACT_APP_API_URL}/auth/isAuthenticated`,
+          {
+            credentials: "include",
+          }
+        );
         const data = await response.json();
         setIsLoggedIn(data.isAuthenticated);
       } catch (error) {
@@ -38,6 +39,21 @@ const AppBase = ({ open, onToggleSidebar, ...rest }) => {
 
     checkAuthentication();
   }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // 461 is the keyCode for the back button on LG remote
+      if (e.keyCode === 461) {
+        e.preventDefault();
+        if (panelIndex > 0) {
+          setPanelIndex(panelIndex - 1);
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [panelIndex]);
 
   const onLogout = async () => {
     try {
@@ -49,6 +65,22 @@ const AppBase = ({ open, onToggleSidebar, ...rest }) => {
     } catch (error) {
       console.error("Error logging out:", error);
     }
+  };
+
+  const handleBack = () => {
+    if (panelIndex > 0) {
+      setPanelIndex(panelIndex - 1);
+      return true; // Prevent default back behavior
+    }
+    return false; // Allow default back behavior when on home panel
+  };
+
+  const handlePanelsKeyDown = (ev) => {
+    onToggleSidebar(ev, { onToggleSidebar, open });
+  };
+
+  const handlePopupClose = () => {
+    setShowLogoutPopup(false);
   };
 
   return (
@@ -66,10 +98,10 @@ const AppBase = ({ open, onToggleSidebar, ...rest }) => {
 
       <Panels
         {...rest}
-        onKeyDown={(ev) => onToggleSidebar(ev, { onToggleSidebar, open })}
+        onKeyDown={handlePanelsKeyDown}
         className={open ? css.sideBarOpened : css.sideBarClosed}
         index={panelIndex}
-        onBack={() => setPanelIndex(0)}
+        onBack={handleBack}
       >
         <Panel>
           <Home
@@ -81,23 +113,24 @@ const AppBase = ({ open, onToggleSidebar, ...rest }) => {
           <MovieDetail
             selectedMovieId={selectedMovieId}
             setSidebarDisplay={setSideBarDisplay}
+            onBack={handleBack}
           />
         </Panel>
         <Panel>
-          <TvShowDetail selectedMovieId={selectedMovieId} />
+          <TvShowDetail selectedMovieId={selectedMovieId} onBack={handleBack} />
         </Panel>
         <Panel>
-          <Movies />
+          <Movies onBack={handleBack} />
         </Panel>
         <Panel>
-          <TvShows />
+          <TvShows onBack={handleBack} />
         </Panel>
         <Panel>
           <Login />
         </Panel>
       </Panels>
 
-      <Popup open={showLogoutPopup} onClose={() => setShowLogoutPopup(false)}>
+      <Popup open={showLogoutPopup} onClose={handlePopupClose}>
         Successfully logged out
       </Popup>
     </Row>
@@ -109,14 +142,9 @@ AppBase.propTypes = {
   onToggleSidebar: PropTypes.func,
 };
 
-AppBase.defaultProps = {
-  open: false,
-};
+const App = Changeable({
+  prop: "open",
+  change: "onToggleSidebar",
+})(AppBase);
 
-const App = Changeable(
-  { prop: "open", change: "onToggleSidebar" },
-  ThemeDecorator(Spottable(AppBase))
-);
-
-export default App;
-export { App, AppBase };
+export default ThemeDecorator(App);

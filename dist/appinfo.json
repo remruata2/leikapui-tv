@@ -1,10 +1,10 @@
 {
-	"id": "com.leikapui.studios",
+	"id": "webos-leikapui-enact",
 	"version": "1.0.0",
-	"vendor": "Leikapui Studios",
+	"vendor": "LGE-SVL",
 	"type": "web",
 	"main": "index.html",
-	"title": "Leikapui",
+	"title": "Enact App Template",
 	"icon": "icon.png",
 	"miniicon": "icon-mini.png",
 	"largeIcon": "icon-large.png",

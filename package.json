@@ -21,7 +21,7 @@
   "private": true,
   "repository": "",
   "engines": {
-    "node": "22.x",
+    "node": "20.x",
     "npm": ">=6.9.0"
   },
   "enact": {

@@ -1,5 +1,4 @@
 import { useNavigate } from "react-router-dom";
-import { Button } from "@enact/sandstone/Button";
 import QRCode from "qrcode.react";
 import css from "./Login.module.less";
 import { useState, useEffect } from "react";

@@ -20,6 +20,10 @@ const TvShowsCarousel = ({ setPanelIndex, setSelectedMovieId }) => {
     setPanelIndex(2);
   };
 
+  const handleItemClick = (id) => {
+    handleSelect(id);
+  };
+
   return (
     <Scroller direction="horizontal" noScrollByWheel noScrollByDrag>
       <div style={{ height: "300px" }}>
@@ -29,7 +33,7 @@ const TvShowsCarousel = ({ setPanelIndex, setSelectedMovieId }) => {
             <ImageItem
               {...rest}
               src={items[itemIndex].horizontal_poster}
-              onClick={() => handleSelect(items[itemIndex]._id)}
+              onClick={() => handleItemClick(items[itemIndex]._id)}
             >
               {items[itemIndex].show_name}
             </ImageItem>
