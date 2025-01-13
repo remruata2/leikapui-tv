@@ -5,24 +5,67 @@ import TvShowsCarousel from "../../components/TvShowsCarousel/TvShowsCarousel";
 import Heading from "@enact/sandstone/Heading";
 import Scroller from "@enact/sandstone/Scroller";
 import HomeBanner from "../../components/HomeBanner/HomeBanner";
-import { useEffect } from "react";
+import { useEffect, useRef, useCallback, useState } from "react";
 import Spotlight from "@enact/spotlight";
 
 const Home = ({ setPanelIndex, setSelectedMovieId }) => {
+  const [contentHeight, setContentHeight] = useState(0);
+  const contentRef = useRef(null);
+
   useEffect(() => {
     // Set 5-way mode and initialize spotlight
     Spotlight.setPointerMode(false);
-    
+
     // Wait for next render cycle to ensure components are mounted
     const timer = setTimeout(() => {
-      const bannerElement = document.querySelector('[spotlightId="banner-container"]');
+      const bannerElement = document.querySelector(
+        '[spotlightId="banner-container"]'
+      );
       if (bannerElement) {
         Spotlight.focus(bannerElement);
+      }
+
+      // Calculate and set content height
+      if (contentRef.current) {
+        const height = contentRef.current.scrollHeight;
+        setContentHeight(height);
+        console.log('Content height:', height);
       }
     }, 0);
 
     return () => clearTimeout(timer);
   }, []);
+
+  const handleKeyDown = useCallback((e) => {
+    if (e.keyCode === 40) { // Down arrow
+      e.preventDefault();
+      const scroller = contentRef.current;
+      if (scroller) {
+        const currentScrollTop = scroller.scrollTop;
+        scroller.scrollTo({
+          top: currentScrollTop + 400,
+          behavior: 'smooth'
+        });
+      }
+    } else if (e.keyCode === 38) { // Up arrow
+      e.preventDefault();
+      const scroller = contentRef.current;
+      if (scroller) {
+        const currentScrollTop = scroller.scrollTop;
+        scroller.scrollTo({
+          top: currentScrollTop - 400,
+          behavior: 'smooth'
+        });
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [handleKeyDown]);
 
   return (
     <div className={css.homeWrapper}>
@@ -31,12 +74,16 @@ const Home = ({ setPanelIndex, setSelectedMovieId }) => {
         direction="vertical"
         focusableScrollbar
         horizontalScrollThumbAriaLabel="scroll thumb"
-        spotlightDisabled={false}
         verticalScrollThumbAriaLabel="scroll thumb"
-        scrollMode="translate"
+        scrollMode="native"
+        verticalScrollbar="visible"
+        fadeOut={false}
+        style={{
+          '--scroll-content-height': `${contentHeight}px`,
+        }}
       >
-        <div className={css.homeContent}>
-          <HomeBanner 
+        <div ref={contentRef} className={css.homeContent}>
+          <HomeBanner
             setPanelIndex={setPanelIndex}
             setSelectedMovieId={setSelectedMovieId}
           />
@@ -64,9 +111,9 @@ const Home = ({ setPanelIndex, setSelectedMovieId }) => {
 
 // Configure SpotlightContainerDecorator
 const HomeDecorator = SpotlightContainerDecorator({
-  enterTo: 'default-element',
+  enterTo: "default-element",
   defaultElement: '[spotlightId="banner-container"]',
-  preserveId: true
+  preserveId: true,
 });
 
 export default HomeDecorator(Home);

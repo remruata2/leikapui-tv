@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Scroller } from "@enact/sandstone/Scroller";
 import { ImageItem } from "@enact/sandstone/ImageItem";
 import { VirtualGridList } from "@enact/sandstone/VirtualList";
+import SpotlightContainerDecorator from "@enact/spotlight/SpotlightContainerDecorator";
 
 const TvShowsCarousel = ({ setPanelIndex, setSelectedMovieId }) => {
   const [items, setItems] = useState([]);
@@ -13,7 +14,7 @@ const TvShowsCarousel = ({ setPanelIndex, setSelectedMovieId }) => {
       .catch((error) => console.error("Error:", error));
   }, []);
 
-  const itemWidth = window.innerWidth / 4; // Adjust this value as needed
+  const itemWidth = window.innerWidth / 4;
 
   const handleSelect = (id) => {
     setSelectedMovieId(id);
@@ -25,7 +26,11 @@ const TvShowsCarousel = ({ setPanelIndex, setSelectedMovieId }) => {
   };
 
   return (
-    <Scroller direction="horizontal" noScrollByWheel noScrollByDrag>
+    <Scroller 
+      direction="horizontal" 
+      focusableScrollbar
+      spotlightDisabled={false}
+    >
       <div style={{ height: "300px" }}>
         <VirtualGridList
           dataSize={items.length}
@@ -34,19 +39,25 @@ const TvShowsCarousel = ({ setPanelIndex, setSelectedMovieId }) => {
               {...rest}
               src={items[itemIndex].horizontal_poster}
               onClick={() => handleItemClick(items[itemIndex]._id)}
+              spotlightDisabled={false}
             >
               {items[itemIndex].show_name}
             </ImageItem>
           )}
-          itemSize={{ minWidth: itemWidth, minHeight: 300 }} // Adjust the item size as needed
-          noScrollByWheel
+          itemSize={{ minWidth: itemWidth, minHeight: 300 }}
           direction="horizontal"
-          column={items.length}
           horizontalScrollbar="hidden"
+          spotlightDisabled={false}
         />
       </div>
     </Scroller>
   );
 };
 
-export default TvShowsCarousel;
+const CarouselDecorator = SpotlightContainerDecorator({
+  enterTo: 'default-element',
+  preserveId: true,
+  continue5WayHold: true
+});
+
+export default CarouselDecorator(TvShowsCarousel);

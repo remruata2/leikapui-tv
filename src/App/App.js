@@ -90,7 +90,7 @@ const AppBase = ({ open, onToggleSidebar, ...rest }) => {
         setPanelIndex={setPanelIndex}
         onToggleSidebar={onToggleSidebar}
         panelIndex={panelIndex}
-        className={`${css.sidebar} ${open ? css.sideBarOpened : ''}`}
+        className={`${css.sidebar} ${open ? css.sideBarOpened : ""}`}
         isLoggedIn={isLoggedIn}
         onLogout={onLogout}
         sideBarDisplay={sideBarDisplay}
@@ -117,7 +117,11 @@ const AppBase = ({ open, onToggleSidebar, ...rest }) => {
           />
         </Panel>
         <Panel>
-          <TvShowDetail selectedMovieId={selectedMovieId} onBack={handleBack} />
+          <TvShowDetail
+            selectedMovieId={selectedMovieId}
+            setSidebarDisplay={setSideBarDisplay}
+            onBack={handleBack}
+          />
         </Panel>
         <Panel>
           <Movies onBack={handleBack} />
