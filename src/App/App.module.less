@@ -1,5 +1,5 @@
 .app {
-  position: relative;
+  display: flex;
   width: 100%;
   height: 100%;
   background-color: rgb(61, 61, 61);
@@ -42,6 +42,16 @@ body {
 
   &.sideBarOpened {
     width: 20%;
+  }
+}
+
+.mainContent {
+  flex: 1;
+  margin-left: 7%;
+  transition: margin-left 0.3s ease-in-out;
+
+  &.sideBarOpened {
+    margin-left: 20%;
   }
 }
 

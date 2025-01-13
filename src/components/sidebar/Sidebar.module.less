@@ -10,11 +10,11 @@
     .menuItem {
       .itemContent {
         justify-content: center;
-        
+
         .label {
           display: none;
         }
-        
+
         .icon {
           margin: 0;
         }
@@ -30,16 +30,47 @@
   }
 
   .menuItem {
-    border-radius: 8px;
     padding: 0.5rem;
     transition: all 0.3s ease;
     min-height: 48px;
     display: flex;
     align-items: center;
+    border-radius: 8px;
+    background-color: transparent !important;
 
+    // Override all Enact Sandstone Item states
+    &:global(.enact_sandstone_Item_Item),
+    &:global(.enact_sandstone_Item_focused),
+    &:global(.enact_sandstone_Item_hover),
+    &:global(.enact_sandstone_Item_selected),
+    &:global(.enact_sandstone_Item_active),
+    &:global(.enact_sandstone_Item_spotlightDisabled),
+    &:global(.enact_sandstone_Item_disabled) {
+      background-color: transparent !important;
+      background: none !important;
+    }
+
+    // Override Spotlight states
+    &:global(.spotlight),
+    &:global(.spottable-default),
+    &:global(.spottable),
+    &:global(.spotlight-default),
+    &:global(.spotlight-focus),
+    &:global(.spotlight-disabled) {
+      background-color: transparent !important;
+      background: none !important;
+    }
+
+    // Override any hover states
     &:hover,
     &:focus {
-      background-color: rgba(255, 255, 255, 0.1);
+      background-color: transparent !important;
+      background: none !important;
+    }
+
+    &.focused {
+      background-color: rgba(214, 214, 214, 0.966) !important;
+      z-index: 2;
 
       .itemContent {
         .icon {
@@ -52,7 +83,8 @@
     }
 
     &.active {
-      background-color: rgba(255, 255, 255, 0.2);
+      background-color: rgba(230, 230, 230, 0.801) !important;
+      z-index: 2;
     }
 
     .itemContent {
@@ -61,6 +93,7 @@
       gap: 1rem;
       width: 100%;
       transition: all 0.3s ease;
+      background: none !important;
 
       .icon {
         font-size: 54px;

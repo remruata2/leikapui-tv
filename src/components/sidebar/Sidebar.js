@@ -1,21 +1,22 @@
 import { useState, useCallback } from "react";
 import css from "./Sidebar.module.less";
 import { RiHome5Fill, RiMovie2Fill, RiTvFill } from "react-icons/ri";
-import { BiLogOut } from "react-icons/bi";
+import { BiLogOut, BiLogIn } from "react-icons/bi";
 import Item from "@enact/sandstone/Item";
 import { Cell } from "@enact/ui/Layout";
 import SpotlightContainerDecorator from "@enact/spotlight/SpotlightContainerDecorator";
 
 const Sidebar = ({
   open,
-  setPanelIndex,
   onToggleSidebar,
-  className,
+  setPanelIndex,
+  panelIndex,
   isLoggedIn,
   onLogout,
   sideBarDisplay,
+  className,
 }) => {
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [focusedIndex, setFocusedIndex] = useState(0);
 
   const menuItems = [
     {
@@ -35,14 +36,25 @@ const Sidebar = ({
     },
   ];
 
+  // Add login/logout to total menu items for navigation
+  const totalMenuItems = isLoggedIn ? menuItems.length + 1 : menuItems.length + 1;
+
   const handleItemClick = (index, panelIdx) => {
     console.log("Item clicked:", index, panelIdx);
-    setCurrentIndex(index);
     setPanelIndex(panelIdx);
+    onToggleSidebar({ open: false });
   };
 
   const handleSidebarFocus = (e) => {
     console.log("Sidebar focused", e.target);
+    // Focus the first menu item when sidebar opens
+    const firstMenuItem = document.querySelector(
+      '[data-spotlight-id="menu-item-0"]'
+    );
+    if (firstMenuItem) {
+      firstMenuItem.focus();
+      setFocusedIndex(0);
+    }
     onToggleSidebar({ open: true });
   };
 
@@ -68,19 +80,26 @@ const Sidebar = ({
         // Down arrow
         e.preventDefault();
         e.stopPropagation();
-        console.log("Current index:", currentIndex);
 
-        // Calculate next index
-        const nextIndex =
-          currentIndex < menuItems.length - 1 ? currentIndex + 1 : currentIndex;
+        // Calculate next index, including login/logout item
+        const nextIndex = focusedIndex < totalMenuItems - 1 ? focusedIndex + 1 : focusedIndex;
 
         // Focus the next item
-        const nextElement = document.querySelector(
-          `[data-spotlight-id="menu-item-${nextIndex}"]`
-        );
+        let nextElement;
+        if (nextIndex === menuItems.length) {
+          // If next item is login/logout
+          nextElement = document.querySelector(
+            `[data-spotlight-id="${isLoggedIn ? 'logout-item' : 'login-item'}"]`
+          );
+        } else {
+          nextElement = document.querySelector(
+            `[data-spotlight-id="menu-item-${nextIndex}"]`
+          );
+        }
+
         if (nextElement) {
           nextElement.focus();
-          setCurrentIndex(nextIndex);
+          setFocusedIndex(nextIndex);
         }
       } else if (e.keyCode === 38) {
         // Up arrow
@@ -88,24 +107,44 @@ const Sidebar = ({
         e.stopPropagation();
 
         // Calculate previous index
-        const prevIndex = currentIndex > 0 ? currentIndex - 1 : currentIndex;
+        const prevIndex = focusedIndex > 0 ? focusedIndex - 1 : focusedIndex;
 
         // Focus the previous item
-        const prevElement = document.querySelector(
-          `[data-spotlight-id="menu-item-${prevIndex}"]`
-        );
+        let prevElement;
+        if (prevIndex === menuItems.length) {
+          // If prev item is login/logout
+          prevElement = document.querySelector(
+            `[data-spotlight-id="${isLoggedIn ? 'logout-item' : 'login-item'}"]`
+          );
+        } else {
+          prevElement = document.querySelector(
+            `[data-spotlight-id="menu-item-${prevIndex}"]`
+          );
+        }
+
         if (prevElement) {
           prevElement.focus();
-          setCurrentIndex(prevIndex);
+          setFocusedIndex(prevIndex);
+        }
+      } else if (e.keyCode === 13) {
+        // Enter key
+        e.preventDefault();
+        e.stopPropagation();
+        if (focusedIndex === menuItems.length) {
+          // If login/logout item is focused
+          if (isLoggedIn) {
+            onLogout();
+          } else {
+            handleItemClick(focusedIndex, 5); // Login panel
+          }
+        } else {
+          const currentItem = menuItems[focusedIndex];
+          handleItemClick(focusedIndex, currentItem.index);
         }
       }
     },
-    [currentIndex, menuItems.length]
+    [focusedIndex, menuItems, isLoggedIn, onLogout]
   );
-
-  const handleMenuItemClick = (index, panelIdx) => {
-    handleItemClick(index, panelIdx);
-  };
 
   if (!sideBarDisplay) {
     return null;
@@ -123,12 +162,13 @@ const Sidebar = ({
         {menuItems.map((item, index) => (
           <Item
             key={index}
-            onClick={() => handleMenuItemClick(index, item.index)}
+            onClick={() => handleItemClick(index, item.index)}
             className={`${css.menuItem} ${
-              currentIndex === index ? css.active : ""
-            }`}
+              item.index === panelIndex ? css.active : ""
+            } ${focusedIndex === index ? css.focused : ""}`}
             spotlightId={`menu-item-${index}`}
-            onFocus={() => console.log("Item focused:", index)}
+            onFocus={() => setFocusedIndex(index)}
+            tabIndex={0}
           >
             <div className={css.itemContent}>
               {item.icon}
@@ -136,16 +176,34 @@ const Sidebar = ({
             </div>
           </Item>
         ))}
-        {isLoggedIn && (
+        {isLoggedIn ? (
           <Item
             onClick={onLogout}
-            className={css.menuItem}
+            className={`${css.menuItem} ${
+              focusedIndex === menuItems.length ? css.focused : ""
+            }`}
             spotlightId="logout-item"
-            onFocus={() => console.log("Logout item focused")}
+            onFocus={() => setFocusedIndex(menuItems.length)}
+            tabIndex={0}
           >
             <div className={css.itemContent}>
               <BiLogOut className={css.icon} />
               <span className={css.label}>Logout</span>
+            </div>
+          </Item>
+        ) : (
+          <Item
+            onClick={() => handleItemClick(menuItems.length, 5)}
+            className={`${css.menuItem} ${
+              focusedIndex === menuItems.length ? css.focused : ""
+            }`}
+            spotlightId="login-item"
+            onFocus={() => setFocusedIndex(menuItems.length)}
+            tabIndex={0}
+          >
+            <div className={css.itemContent}>
+              <BiLogIn className={css.icon} />
+              <span className={css.label}>Login</span>
             </div>
           </Item>
         )}
@@ -154,12 +212,11 @@ const Sidebar = ({
   );
 };
 
-// Configure SpotlightContainerDecorator with specific settings for sidebar
+// Configure SpotlightContainerDecorator
 const SidebarDecorator = SpotlightContainerDecorator({
-  enterTo: "last-focused",
-  defaultElement: '[spotlightId="menu-item-0"]',
+  enterTo: "default-element",
+  defaultElement: '[data-spotlight-id="menu-item-0"]',
   preserveId: true,
-  restrict: "self-only",
 });
 
 export default SidebarDecorator(Sidebar);
