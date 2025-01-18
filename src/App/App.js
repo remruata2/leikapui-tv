@@ -134,7 +134,7 @@ const AppBase = ({ open, onToggleSidebar, ...rest }) => {
           {panelIndex === 5 && <Profile />}
         </Panel>
         <Panel>
-          {panelIndex === 6 && <Login />}
+          {panelIndex === 6 && <Login setPanelIndex={setPanelIndex} />}
         </Panel>
       </Panels>
 
