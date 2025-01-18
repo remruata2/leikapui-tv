@@ -9,6 +9,7 @@ import TvShows from "../views/TvShows/TvShows";
 import MovieDetail from "../views/MovieDetail/MovieDetail";
 import TvShowDetail from "../views/TvShowDetail/TvShowDetail";
 import Login from "../views/Login/Login";
+import Profile from "../views/Profile/Profile";
 import css from "./App.module.less";
 import Changeable from "@enact/ui/Changeable";
 import PropTypes from "prop-types";
@@ -130,7 +131,10 @@ const AppBase = ({ open, onToggleSidebar, ...rest }) => {
           <TvShows onBack={handleBack} />
         </Panel>
         <Panel>
-          <Login />
+          {panelIndex === 5 && <Profile />}
+        </Panel>
+        <Panel>
+          {panelIndex === 6 && <Login />}
         </Panel>
       </Panels>
 

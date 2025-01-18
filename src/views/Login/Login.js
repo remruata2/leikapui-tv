@@ -4,6 +4,7 @@ import css from "./Login.module.less";
 import { useState, useEffect } from "react";
 import Item from "@enact/sandstone/Item";
 import Button from "@enact/sandstone/Button";
+import LS2Request from '@enact/webos/LS2Request';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -12,7 +13,34 @@ const Login = () => {
   const [selectedMethod, setSelectedMethod] = useState("qr"); // 'qr' or 'google'
   const [focusedItem, setFocusedItem] = useState("qr");
 
+  const saveAuthData = (token, user) => {
+    const params = {
+      key: "authData",
+      value: JSON.stringify({ token, user })
+    };
+
+    new LS2Request().send({
+      service: 'luna://com.webos.service.db',
+      method: 'put',
+      parameters: params,
+      onSuccess: () => {
+        console.log("[TV Login] Auth data saved successfully");
+        setTimeout(() => {
+          console.log("[TV Login] Redirecting to home...");
+          navigate("/home");
+        }, 1500);
+      },
+      onFailure: (err) => {
+        console.error("[TV Login] Failed to save auth data:", err);
+        // Still redirect even if storage fails
+        navigate("/home");
+      }
+    });
+  };
+
   useEffect(() => {
+    let pollInterval;
+
     const fetchDeviceCode = async () => {
       try {
         setLoginStatus("generating");
@@ -23,40 +51,71 @@ const Login = () => {
           }
         );
         const data = await response.json();
-        console.log("Device Code Response:", data);
+        console.log("[TV Login] Device Code Response:", data);
         setQrCodeUrl(data.verification_url);
         setLoginStatus("waiting");
 
         // Polling for authentication
-        const pollInterval = setInterval(async () => {
-          const pollResponse = await fetch(
-            `${process.env.REACT_APP_API_URL}/auth/poll`,
-            {
-              method: "POST",
-              body: JSON.stringify({ device_code: data.device_code }),
-              headers: {
-                "Content-Type": "application/json",
-              },
+        pollInterval = setInterval(async () => {
+          try {
+            console.log("[TV Login] Polling for authentication...");
+            const pollResponse = await fetch(
+              `${process.env.REACT_APP_API_URL}/auth/poll`,
+              {
+                method: "POST",
+                body: JSON.stringify({ device_code: data.user_code }),
+                headers: {
+                  "Content-Type": "application/json",
+                },
+              }
+            );
+            
+            if (!pollResponse.ok) {
+              console.error("[TV Login] Poll request failed:", pollResponse.status);
+              throw new Error(`Poll request failed: ${pollResponse.status}`);
             }
-          );
-          const pollData = await pollResponse.json();
-          if (pollData.authenticated) {
-            setLoginStatus("success");
+            
+            const pollData = await pollResponse.json();
+            console.log("[TV Login] Poll response:", pollData);
+            
+            if (pollData.authenticated) {
+              console.log("[TV Login] Authentication successful, preparing to redirect");
+              setLoginStatus("success");
+              clearInterval(pollInterval);
+              saveAuthData(pollData.token, pollData.user);
+            }
+          } catch (error) {
+            console.error("[TV Login] Error during polling:", error);
+            setLoginStatus("error");
             clearInterval(pollInterval);
-            setTimeout(() => navigate("/home"), 1500); // Give time to show success message
           }
         }, 5000);
 
-        return () => clearInterval(pollInterval);
+        return () => {
+          if (pollInterval) {
+            console.log("[TV Login] Cleaning up poll interval");
+            clearInterval(pollInterval);
+          }
+        };
       } catch (error) {
-        console.error("Error during login:", error);
+        console.error("[TV Login] Error during device code fetch:", error);
         setLoginStatus("error");
+        if (pollInterval) {
+          clearInterval(pollInterval);
+        }
       }
     };
 
     if (selectedMethod === "qr") {
       fetchDeviceCode();
     }
+
+    return () => {
+      if (pollInterval) {
+        console.log("[TV Login] Cleaning up poll interval on unmount");
+        clearInterval(pollInterval);
+      }
+    };
   }, [navigate, selectedMethod]);
 
   const handleKeyDown = (e) => {
