@@ -1,13 +1,14 @@
 @import "~@enact/sandstone/styles/mixins.less";
 
 .movieDetail {
-  min-height: 100vh;
+  height: calc(100vh - 4rem); // Account for padding
   background-size: cover;
   background-position: center;
   position: relative;
   display: flex;
-  align-items: center;
-  padding: 1rem;
+  padding: 2rem;
+  gap: 2rem;
+  overflow: hidden;
 
   &::before {
     content: "";
@@ -18,39 +19,141 @@
     bottom: 0;
     background: linear-gradient(
       90deg,
-      rgba(0, 0, 0, 0.8) 0%,
-      rgba(0, 0, 0, 0.6) 50%,
-      rgba(0, 0, 0, 0.4) 100%
+      rgba(0, 0, 0, 0.9) 0%,
+      rgba(0, 0, 0, 0.7) 50%,
+      rgba(0, 0, 0, 0.5) 100%
     );
   }
 
-  .horizontal_poster {
+  .trailerSection {
+    position: relative;
     flex: 1;
+    width: 45%;
+    z-index: 2;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+    background-color: black;
+    padding-top: calc(45% * 9 / 16);
+    height: 0;
+    align-self: flex-start;
 
-    .moviePoster {
+    > * {
+      position: absolute;
+      top: 0;
+      left: 0;
       width: 100%;
       height: 100%;
-      object-fit: cover;
-      opacity: 0.7;
+    }
+
+    .trailerOverlay {
+      width: 100%;
+      height: 100%;
+      background-size: cover;
+      background-position: center;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      &::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.4);
+      }
+
+      .trailerButton {
+        position: relative;
+        z-index: 1;
+        background-color: rgba(229, 9, 20, 0.9);
+        color: white;
+        padding: 1.5rem 3rem;
+        border-radius: 3rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        font-size: 1.5rem;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+
+        &:hover,
+        &:focus {
+          transform: scale(1.1);
+          background-color: rgba(229, 9, 20, 1);
+          border-color: white;
+        }
+
+        .buttonIcon {
+          font-size: 1.2rem;
+          padding-right: 0.5rem;
+        }
+      }
+    }
+
+    .noTrailer {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 2rem;
+      background-color: rgba(0, 0, 0, 0.5);
+
+      .warningIcon {
+        font-size: 1.5rem;
+        color: #ffc107;
+      }
     }
   }
 
   .content {
     position: relative;
-    max-width: 40%;
+    z-index: 2;
     color: white;
-    z-index: 1;
-    margin-left: auto;
-    display: flex;
-    flex-direction: column;
     flex: 1;
-    padding: 30px;
-    border-radius: 10px;
+    padding: 1.5rem;
+    border-radius: 20px;
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    overflow-y: auto;
+    max-height: 100%;
+
+    &::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: rgba(229, 9, 20, 0.8);
+      border-radius: 4px;
+
+      &:hover {
+        background: rgba(229, 9, 20, 1);
+      }
+    }
+
+    .horizontal_poster {
+      flex: 1;
+
+      .moviePoster {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        opacity: 0.7;
+      }
+    }
 
     .movieTitle {
       font-size: 2rem;
       font-weight: bold;
-      margin-bottom: 1.5rem;
+      margin-bottom: 1rem;
       text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
     }
 
@@ -62,30 +165,23 @@
     }
 
     .badge {
-      background-color: rgba(255, 255, 255, 0.1);
-      padding: 0.2rem 0.2rem;
-      border-radius: 2rem;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      flex: 50%;
       display: flex;
-      transition: background-color 0.2s ease;
-
-      &:focus {
-        background-color: rgba(255, 255, 255, 0.2);
-      }
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background-color: rgba(0, 0, 0, 0.5);
+      border-radius: 1rem;
 
       .icon {
-        color: #e50914;
-      }
-      .tagText {
-        font-size: 1rem;
+        font-size: 1.2rem;
       }
     }
 
     .genresSection {
       margin-bottom: 1rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
     }
 
     .genreTag {
@@ -95,7 +191,6 @@
       color: white;
       padding: 0.5rem 1rem;
       border-radius: 2rem;
-      margin-right: 0.5rem;
       font-size: 0.9rem;
       transition: transform 0.2s ease;
 
@@ -113,6 +208,7 @@
         align-items: center;
         gap: 0.2rem;
         color: #e50914;
+        margin-bottom: 0.5rem;
 
         .icon {
           font-size: 1.2rem;
@@ -123,17 +219,17 @@
         font-size: 1rem;
         line-height: 1.6;
         opacity: 0.9;
-        max-width: 800px;
       }
     }
 
     .metadataSection {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1.5rem;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
       background: rgba(255, 255, 255, 0.1);
       padding: 1rem;
       border-radius: 1rem;
+      margin-bottom: 1rem;
     }
 
     .metadataItem {
@@ -153,7 +249,7 @@
       }
 
       .value {
-        font-size: 0.7rem;
+        font-size: 0.9rem;
         font-weight: bold;
       }
     }
@@ -162,43 +258,70 @@
       display: flex;
       gap: 1rem;
       margin-top: 1rem;
-    }
+      padding-bottom: 0.5rem;
 
-    .playButton {
-      background-color: #e50914;
-      color: white;
-      padding: 0.5rem 1rem;
-      border-radius: 0.5rem;
-      font-size: 1.2rem;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 0.8rem;
-      transition: all 0.2s ease;
-      cursor: pointer;
+      .playButton,
+      .loginButton,
+      .rentButton {
+        min-width: 200px;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-size: 1.2rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.8rem;
+        transition: all 0.2s ease;
+        background-color: #be474d;
 
-      &:hover,
-      &:focus {
-        transform: scale(1.05);
-        background-color: darken(#e50914, 10%);
-        border: 0.1rem solid white;
+        &:hover,
+        &:focus {
+          transform: scale(1.05);
+          border: 0.1rem solid white;
+        }
+
+        .buttonIcon {
+          font-size: 1.2rem;
+          padding-right: 0.5rem;
+        }
       }
 
-      .playIcon {
-        font-size: 1.5rem;
+      .playButton {
+        background-color: #e50914;
+        color: white;
+
+        &:hover,
+        &:focus {
+          background-color: darken(#e50914, 10%);
+        }
+
+        .remainingTime {
+          font-size: 0.9rem;
+          opacity: 0.8;
+          margin-left: 0.5rem;
+        }
+      }
+
+      .loginButton {
+        background-color: #1c89e2;
+        color: white;
+
+        &:hover,
+        &:focus {
+          background-color: darken(#1c89e2, 10%);
+        }
+      }
+
+      .rentButton {
+        background-color: #4caf50;
+        color: white;
+
+        &:hover,
+        &:focus {
+          background-color: darken(#4caf50, 10%);
+        }
       }
     }
-  }
-
-  .horizontal_poster img {
-    width: 100%;
-    height: 100%;
-  }
-
-  .details {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
   }
 }
 
@@ -216,9 +339,35 @@
 
 .loading {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
-  height: 100vh;
-  font-size: 1.2rem;
-  color: white;
+  justify-content: center;
+  height: 100%;
+  gap: 1rem;
+
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(255, 255, 255, 0.1);
+    border-left-color: white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.horizontal_poster img {
+  width: 100%;
+  height: 100%;
+}
+
+.details {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }

@@ -14,6 +14,7 @@ import css from "./App.module.less";
 import Changeable from "@enact/ui/Changeable";
 import PropTypes from "prop-types";
 import Popup from "@enact/sandstone/Popup";
+import { StorageService } from "../utils/storage";
 
 const AppBase = ({ open, onToggleSidebar, ...rest }) => {
   const [panelIndex, setPanelIndex] = useState(0);
@@ -24,17 +25,23 @@ const AppBase = ({ open, onToggleSidebar, ...rest }) => {
 
   useEffect(() => {
     const checkAuthentication = async () => {
-      try {
-        const response = await fetch(
-          `${process.env.REACT_APP_API_URL}/auth/isAuthenticated`,
-          {
-            credentials: "include",
-          }
-        );
-        const data = await response.json();
-        setIsLoggedIn(data.isAuthenticated);
-      } catch (error) {
-        console.error("Error checking authentication:", error);
+      const authData = StorageService.getItem("authData");
+      if (authData?.token) {
+        setIsLoggedIn(true);
+      } else {
+        try {
+          const response = await fetch(
+            `${process.env.REACT_APP_API_URL}/auth/isAuthenticated`,
+            {
+              credentials: "include",
+            }
+          );
+          const data = await response.json();
+          setIsLoggedIn(data.isAuthenticated);
+        } catch (error) {
+          console.error("Error checking authentication:", error);
+          setIsLoggedIn(false);
+        }
       }
     };
 
@@ -58,9 +65,7 @@ const AppBase = ({ open, onToggleSidebar, ...rest }) => {
 
   const onLogout = async () => {
     try {
-      await fetch(`${process.env.REACT_APP_API_URL}/logout`, {
-        credentials: "include",
-      });
+      await StorageService.removeItem("authData");
       setIsLoggedIn(false);
       setShowLogoutPopup(true);
     } catch (error) {
@@ -115,6 +120,7 @@ const AppBase = ({ open, onToggleSidebar, ...rest }) => {
             selectedMovieId={selectedMovieId}
             setSidebarDisplay={setSideBarDisplay}
             onBack={handleBack}
+            setPanelIndex={setPanelIndex}
           />
         </Panel>
         <Panel>
@@ -122,6 +128,7 @@ const AppBase = ({ open, onToggleSidebar, ...rest }) => {
             selectedMovieId={selectedMovieId}
             setSidebarDisplay={setSideBarDisplay}
             onBack={handleBack}
+            setPanelIndex={setPanelIndex}
           />
         </Panel>
         <Panel>
@@ -130,9 +137,7 @@ const AppBase = ({ open, onToggleSidebar, ...rest }) => {
         <Panel>
           <TvShows onBack={handleBack} />
         </Panel>
-        <Panel>
-          {panelIndex === 5 && <Profile />}
-        </Panel>
+        <Panel>{panelIndex === 5 && <Profile />}</Panel>
         <Panel>
           {panelIndex === 6 && <Login setPanelIndex={setPanelIndex} />}
         </Panel>
