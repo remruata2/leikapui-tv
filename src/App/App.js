@@ -50,11 +50,15 @@ const AppBase = ({ open, onToggleSidebar, ...rest }) => {
 
   useEffect(() => {
     const handleKeyDown = (e) => {
-      // 461 is the keyCode for the back button on LG remote
-      if (e.keyCode === 461) {
+      const keycode = e.keyCode || e.which;
+      if (keycode === 461) { // WebOS back button keycode
         e.preventDefault();
+        console.log('Back button pressed - Current panel index:', panelIndex);
         if (panelIndex > 0) {
-          setPanelIndex(panelIndex - 1);
+          setPanelIndex(prevIndex => prevIndex - 1);
+        } else if (window.webOS && window.webOS.platformBack) {
+          // Only show exit dialog on home panel
+          window.webOS.platformBack();
         }
       }
     };
@@ -74,10 +78,12 @@ const AppBase = ({ open, onToggleSidebar, ...rest }) => {
   };
 
   const handleBack = () => {
+    console.log('handleBack called - Current panel index:', panelIndex);
     if (panelIndex > 0) {
-      setPanelIndex(panelIndex - 1);
+      setPanelIndex(prevIndex => prevIndex - 1);
       return true; // Prevent default back behavior
     }
+    console.log('handleBack - On first panel, allowing default behavior');
     return false; // Allow default back behavior when on home panel
   };
 

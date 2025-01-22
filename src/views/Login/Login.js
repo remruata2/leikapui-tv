@@ -222,32 +222,6 @@ const Login = ({ setPanelIndex }) => {
               <p className={css.status}>{getStatusMessage()}</p>
             </div>
           </div>
-
-          <div className={css.divider}>
-            <span>or</span>
-          </div>
-
-          <Item
-            className={`${css.option} ${
-              focusedItem === "google" ? css.focused : ""
-            } ${selectedMethod === "google" ? css.selected : ""}`}
-            onClick={() => setSelectedMethod("google")}
-            onFocus={() => setFocusedItem("google")}
-            spotlightId="google-option"
-          >
-            <h2>Login with Google</h2>
-            {selectedMethod === "google" && (
-              <div className={css.googleContainer}>
-                <Button
-                  onClick={handleGoogleLogin}
-                  className={css.googleButton}
-                  size="large"
-                >
-                  Continue with Google
-                </Button>
-              </div>
-            )}
-          </Item>
         </div>
       </div>
     </div>
