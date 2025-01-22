@@ -10,6 +10,7 @@ import MovieDetail from "../views/MovieDetail/MovieDetail";
 import TvShowDetail from "../views/TvShowDetail/TvShowDetail";
 import Login from "../views/Login/Login";
 import Profile from "../views/Profile/Profile";
+import Device from "../views/Device/Device";
 import css from "./App.module.less";
 import Changeable from "@enact/ui/Changeable";
 import PropTypes from "prop-types";
@@ -51,11 +52,12 @@ const AppBase = ({ open, onToggleSidebar, ...rest }) => {
   useEffect(() => {
     const handleKeyDown = (e) => {
       const keycode = e.keyCode || e.which;
-      if (keycode === 461) { // WebOS back button keycode
+      if (keycode === 461) {
+        // WebOS back button keycode
         e.preventDefault();
-        console.log('Back button pressed - Current panel index:', panelIndex);
+        console.log("Back button pressed - Current panel index:", panelIndex);
         if (panelIndex > 0) {
-          setPanelIndex(prevIndex => prevIndex - 1);
+          setPanelIndex((prevIndex) => prevIndex - 1);
         } else if (window.webOS && window.webOS.platformBack) {
           // Only show exit dialog on home panel
           window.webOS.platformBack();
@@ -78,12 +80,12 @@ const AppBase = ({ open, onToggleSidebar, ...rest }) => {
   };
 
   const handleBack = () => {
-    console.log('handleBack called - Current panel index:', panelIndex);
+    console.log("handleBack called - Current panel index:", panelIndex);
     if (panelIndex > 0) {
-      setPanelIndex(prevIndex => prevIndex - 1);
+      setPanelIndex((prevIndex) => prevIndex - 1);
       return true; // Prevent default back behavior
     }
-    console.log('handleBack - On first panel, allowing default behavior');
+    console.log("handleBack - On first panel, allowing default behavior");
     return false; // Allow default back behavior when on home panel
   };
 
@@ -119,33 +121,46 @@ const AppBase = ({ open, onToggleSidebar, ...rest }) => {
           <Home
             setPanelIndex={setPanelIndex}
             setSelectedMovieId={setSelectedMovieId}
+            panelIndex={panelIndex}
+            isLoggedIn={isLoggedIn}
           />
         </Panel>
         <Panel>
           <MovieDetail
             selectedMovieId={selectedMovieId}
-            setSidebarDisplay={setSideBarDisplay}
-            onBack={handleBack}
             setPanelIndex={setPanelIndex}
+            isLoggedIn={isLoggedIn}
           />
         </Panel>
         <Panel>
           <TvShowDetail
             selectedMovieId={selectedMovieId}
-            setSidebarDisplay={setSideBarDisplay}
-            onBack={handleBack}
             setPanelIndex={setPanelIndex}
+            isLoggedIn={isLoggedIn}
           />
         </Panel>
         <Panel>
-          <Movies onBack={handleBack} />
+          <Movies
+            setPanelIndex={setPanelIndex}
+            setSelectedMovieId={setSelectedMovieId}
+            isLoggedIn={isLoggedIn}
+          />
         </Panel>
         <Panel>
-          <TvShows onBack={handleBack} />
+          <TvShows
+            setPanelIndex={setPanelIndex}
+            setSelectedMovieId={setSelectedMovieId}
+            isLoggedIn={isLoggedIn}
+          />
         </Panel>
-        <Panel>{panelIndex === 5 && <Profile />}</Panel>
         <Panel>
-          {panelIndex === 6 && <Login setPanelIndex={setPanelIndex} />}
+          {panelIndex === 5 && <Profile isLoggedIn={isLoggedIn} setPanelIndex={setPanelIndex} />}
+        </Panel>
+        <Panel>
+          <Device />
+        </Panel>
+        <Panel>
+          <Login setIsLoggedIn={setIsLoggedIn} setPanelIndex={setPanelIndex} />
         </Panel>
       </Panels>
 

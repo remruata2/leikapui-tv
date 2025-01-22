@@ -8,7 +8,7 @@ import HomeBanner from "../../components/HomeBanner/HomeBanner";
 import { useEffect, useRef, useCallback, useState } from "react";
 import Spotlight from "@enact/spotlight";
 
-const Home = ({ setPanelIndex, setSelectedMovieId }) => {
+const Home = ({ setPanelIndex, setSelectedMovieId, panelIndex }) => {
   const [contentHeight, setContentHeight] = useState(0);
   const contentRef = useRef(null);
 
@@ -18,23 +18,27 @@ const Home = ({ setPanelIndex, setSelectedMovieId }) => {
 
     // Wait for next render cycle to ensure components are mounted
     const timer = setTimeout(() => {
-      const bannerElement = document.querySelector(
-        '[spotlightId="banner-container"]'
-      );
+      // Try to focus the banner container first
+      const bannerElement = document.querySelector('[spotlightId="banner-container"]');
       if (bannerElement) {
         Spotlight.focus(bannerElement);
+      } else {
+        // If banner container is not available, try to focus any spottable element in the home view
+        const homeContainer = document.querySelector('[data-component-id="home"]');
+        if (homeContainer) {
+          Spotlight.focus(homeContainer);
+        }
       }
 
       // Calculate and set content height
       if (contentRef.current) {
         const height = contentRef.current.scrollHeight;
         setContentHeight(height);
-        console.log('Content height:', height);
       }
-    }, 0);
+    }, 100); // Increased timeout to ensure components are mounted
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [panelIndex]); // Add panelIndex as dependency to re-run when returning to home
 
   const handleKeyDown = useCallback((e) => {
     if (e.keyCode === 40) { // Down arrow
@@ -68,7 +72,7 @@ const Home = ({ setPanelIndex, setSelectedMovieId }) => {
   }, [handleKeyDown]);
 
   return (
-    <div className={css.homeWrapper}>
+    <div data-component-id="home" className={css.homeWrapper}>
       <Scroller
         className={css.homeScroller}
         direction="vertical"
@@ -82,7 +86,7 @@ const Home = ({ setPanelIndex, setSelectedMovieId }) => {
           '--scroll-content-height': `${contentHeight}px`,
         }}
       >
-        <div ref={contentRef} className={css.homeContent}>
+        <div ref={contentRef} className={css.homeContent} onKeyDown={handleKeyDown}>
           <HomeBanner
             setPanelIndex={setPanelIndex}
             setSelectedMovieId={setSelectedMovieId}

@@ -2,12 +2,9 @@ import { useEffect, useState } from "react";
 import { Scroller } from "@enact/sandstone/Scroller";
 import { ImageItem } from "@enact/sandstone/ImageItem";
 import { VirtualGridList } from "@enact/sandstone/VirtualList";
-import { Panels, Panel } from "@enact/sandstone/Panels";
-import MovieDetail from "../MovieDetail/MovieDetail";
+import { Panel } from "@enact/sandstone/Panels";
 
-const Movies = () => {
-  const [movieIndex, setMovieIndex] = useState(0);
-  const [selectedMovieId, setSelectedMovieId] = useState(null);
+const Movies = ({ setPanelIndex, setSelectedMovieId }) => {
   const [items, setItems] = useState([]);
 
   useEffect(() => {
@@ -21,48 +18,34 @@ const Movies = () => {
 
   const handleSelect = (id) => {
     setSelectedMovieId(id);
-    setMovieIndex(1);
+    setPanelIndex(1); // Navigate directly to MovieDetail panel
   };
-
-  const handleKeyDown = (event) => {
-    if (event.key === "Backspace" || event.key === "Escape") {
-      setMovieIndex(0);
-    }
-  };
-
-  useEffect(() => {
-    window.addEventListener("keydown", handleKeyDown);
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, []);
 
   return (
-    <Panels index={movieIndex} onBack={() => setMovieIndex(0)}>
-      <Panel>
-        <Scroller noScrollByWheel noScrollByDrag>
-          <VirtualGridList
-            dataSize={items.length}
-            itemRenderer={({ index: itemIndex, ...rest }) => (
-              <ImageItem
-                {...rest}
-                key={items[itemIndex]._id}
-                src={items[itemIndex].horizontal_poster}
-                onClick={() => handleSelect(items[itemIndex]._id)}
-              >
-                {items[itemIndex].title}
-              </ImageItem>
-            )}
-            itemSize={{ minWidth: itemWidth, minHeight: 300 }} // Adjust the item size as needed
-            noScrollByWheel
-            column={4} // Adjust the number of columns as needed
-          />
-        </Scroller>
-      </Panel>
-      <Panel>
-        <MovieDetail selectedMovieId={selectedMovieId} />
-      </Panel>
-    </Panels>
+    <Panel>
+      <Scroller noScrollByWheel noScrollByDrag>
+        <VirtualGridList
+          dataSize={items.length}
+          itemRenderer={({ index: itemIndex, ...rest }) => (
+            <ImageItem
+              {...rest}
+              key={items[itemIndex]._id}
+              src={items[itemIndex].horizontal_poster}
+              onClick={() => handleSelect(items[itemIndex]._id)}
+              style={{
+                width: itemWidth,
+                height: (itemWidth * 9) / 16,
+              }}
+            >
+              {items[itemIndex].title}
+            </ImageItem>
+          )}
+          itemSize={{ minWidth: itemWidth, minHeight: 300 }}
+          noScrollByWheel
+          column={4}
+        />
+      </Scroller>
+    </Panel>
   );
 };
 

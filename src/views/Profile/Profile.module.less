@@ -1,36 +1,176 @@
-.profileContainer {
-  padding: 2rem;
-  color: #ffffff;
+.profileScroller {
+  height: 100%;
+  padding: 24px;
 }
 
-.header {
-  margin-bottom: 2rem;
+.profileContainer {
+  padding: 2rem;
+  max-width: 1800px;
+  margin: 0 auto;
+  color: #fff;
+}
 
-  h1 {
-    font-size: 2.5rem;
-    margin: 0;
+.profileHeader {
+  text-align: center;
+  margin-bottom: 3rem;
+  padding: 2rem;
+  background: linear-gradient(135deg, #2c3e50, #3498db);
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.profileAvatar {
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 1.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 4px solid rgba(255, 255, 255, 0.2);
+}
+
+.profileName {
+  font-size: 2rem;
+  margin: 0;
+  color: #fff;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.profileDetails {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
+  padding: 2rem;
+  backdrop-filter: blur(10px);
+}
+
+.profileItem {
+  display: flex;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+
+  &:last-child {
+    border-bottom: none;
   }
 }
 
-.formGroup {
-  margin-bottom: 1.5rem;
+.profileIcon {
+  font-size: 1.5rem;
+  color: #3498db;
+  margin-right: 1.5rem;
+  min-width: 24px;
 }
 
-.input {
-  width: 100%;
-  background-color: rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
+.profileInfo {
+  flex: 1;
+
+  label {
+    display: block;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 0.5rem;
+  }
+
+  span {
+    font-size: 1.1rem;
+    color: #fff;
+  }
 }
 
-.updateButton {
-  margin-top: 1rem;
-  min-width: 200px;
+.error-popup {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(231, 76, 60, 0.9);
+  padding: 1rem 2rem;
+  border-radius: 0.5rem;
+  color: #fff;
+  backdrop-filter: blur(5px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+
+  button {
+    background: transparent;
+    border: 1px solid #fff;
+    color: #fff;
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+    margin-left: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+      background: #fff;
+      color: #e74c3c;
+    }
+  }
+}
+
+.loading-spinner {
+  width: 50px;
+  height: 50px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 1s ease-in-out infinite;
+  margin: 0 auto;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.profile-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  color: #fff;
+
+  p {
+    margin-top: 1rem;
+    font-size: 1.2rem;
+  }
+}
+
+.userInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 48px;
+  gap: 16px;
+}
+
+.detailsContainer {
+  margin-bottom: 48px;
+}
+
+.detailRow {
+  margin-bottom: 24px;
+  align-items: center;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.buttonContainer {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
 }
 
 .loadingContainer {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
+  justify-content: center;
   height: 100%;
-  font-size: 1.5rem;
+  gap: 16px;
 }
