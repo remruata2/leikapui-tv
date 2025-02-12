@@ -18,167 +18,176 @@ import Popup from "@enact/sandstone/Popup";
 import { StorageService } from "../utils/storage";
 
 const AppBase = ({ open, onToggleSidebar, ...rest }) => {
-  const [panelIndex, setPanelIndex] = useState(0);
-  const [selectedMovieId, setSelectedMovieId] = useState(null);
-  const [sideBarDisplay, setSideBarDisplay] = useState(true);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [showLogoutPopup, setShowLogoutPopup] = useState(false);
+	const [panelIndex, setPanelIndex] = useState(0);
+	const [selectedMovieId, setSelectedMovieId] = useState(null);
+	const [sideBarDisplay, setSideBarDisplay] = useState(true);
+	const [isLoggedIn, setIsLoggedIn] = useState(false);
+	const [showLogoutPopup, setShowLogoutPopup] = useState(false);
 
-  useEffect(() => {
-    const checkAuthentication = async () => {
-      const authData = StorageService.getItem("authData");
-      if (authData?.token) {
-        setIsLoggedIn(true);
-      } else {
-        try {
-          const response = await fetch(
-            `${process.env.REACT_APP_API_URL}/auth/isAuthenticated`,
-            {
-              credentials: "include",
-            }
-          );
-          const data = await response.json();
-          setIsLoggedIn(data.isAuthenticated);
-        } catch (error) {
-          console.error("Error checking authentication:", error);
-          setIsLoggedIn(false);
-        }
-      }
-    };
+	useEffect(() => {
+		const checkAuthentication = async () => {
+			const authData = StorageService.getItem("authData");
+			if (authData?.token) {
+				setIsLoggedIn(true);
+			} else {
+				try {
+					const response = await fetch(
+						`${process.env.REACT_APP_API_URL}/auth/isAuthenticated`,
+						{
+							credentials: "include",
+						}
+					);
+					const data = await response.json();
+					setIsLoggedIn(data.isAuthenticated);
+				} catch (error) {
+					console.error("Error checking authentication:", error);
+					setIsLoggedIn(false);
+				}
+			}
+		};
 
-    checkAuthentication();
-  }, []);
+		checkAuthentication();
+	}, []);
 
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      const keycode = e.keyCode || e.which;
-      if (keycode === 461) {
-        // WebOS back button keycode
-        e.preventDefault();
-        console.log("Back button pressed - Current panel index:", panelIndex);
-        if (panelIndex > 0) {
-          setPanelIndex((prevIndex) => prevIndex - 1);
-        } else if (window.webOS && window.webOS.platformBack) {
-          // Only show exit dialog on home panel
-          window.webOS.platformBack();
-        }
-      }
-    };
+	useEffect(() => {
+		const handleKeyDown = (e) => {
+			const keycode = e.keyCode || e.which;
+			if (keycode === 461) {
+				// WebOS back button keycode
+				e.preventDefault();
+				console.log("Back button pressed - Current panel index:", panelIndex);
+				if (panelIndex > 0) {
+					setPanelIndex((prevIndex) => prevIndex - 1);
+				} else if (window.webOS && window.webOS.platformBack) {
+					// Only show exit dialog on home panel
+					window.webOS.platformBack();
+				}
+			}
+		};
 
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [panelIndex]);
+		window.addEventListener("keydown", handleKeyDown);
+		return () => window.removeEventListener("keydown", handleKeyDown);
+	}, [panelIndex]);
 
-  const onLogout = async () => {
-    try {
-      await StorageService.removeItem("authData");
-      setIsLoggedIn(false);
-      setShowLogoutPopup(true);
-    } catch (error) {
-      console.error("Error logging out:", error);
-    }
-  };
+	const onLogout = async () => {
+		try {
+			await StorageService.removeItem("authData");
+			setIsLoggedIn(false);
+			setShowLogoutPopup(true);
+		} catch (error) {
+			console.error("Error logging out:", error);
+		}
+	};
 
-  const handleBack = () => {
-    console.log("handleBack called - Current panel index:", panelIndex);
-    if (panelIndex > 0) {
-      setPanelIndex((prevIndex) => prevIndex - 1);
-      return true; // Prevent default back behavior
-    }
-    console.log("handleBack - On first panel, allowing default behavior");
-    return false; // Allow default back behavior when on home panel
-  };
+	const handleBack = () => {
+		console.log("handleBack called - Current panel index:", panelIndex);
+		if (panelIndex > 0) {
+			setPanelIndex((prevIndex) => prevIndex - 1);
+			return true; // Prevent default back behavior
+		}
+		console.log("handleBack - On first panel, allowing default behavior");
+		return false; // Allow default back behavior when on home panel
+	};
 
-  const handlePanelsKeyDown = (ev) => {
-    onToggleSidebar(ev, { onToggleSidebar, open });
-  };
+	const handlePanelsKeyDown = (ev) => {
+		onToggleSidebar(ev, { onToggleSidebar, open });
+	};
 
-  const handlePopupClose = () => {
-    setShowLogoutPopup(false);
-  };
+	const handlePopupClose = () => {
+		setShowLogoutPopup(false);
+	};
 
-  return (
-    <Row>
-      <Sidebar
-        open={open}
-        setPanelIndex={setPanelIndex}
-        onToggleSidebar={onToggleSidebar}
-        panelIndex={panelIndex}
-        className={`${css.sidebar} ${open ? css.sideBarOpened : ""}`}
-        isLoggedIn={isLoggedIn}
-        onLogout={onLogout}
-        sideBarDisplay={sideBarDisplay}
-      />
+	return (
+		<Row>
+			<Sidebar
+				open={open}
+				setPanelIndex={setPanelIndex}
+				onToggleSidebar={onToggleSidebar}
+				panelIndex={panelIndex}
+				className={`${css.sidebar} ${open ? css.sideBarOpened : ""}`}
+				isLoggedIn={isLoggedIn}
+				onLogout={onLogout}
+				sideBarDisplay={sideBarDisplay}
+			/>
 
-      <Panels
-        {...rest}
-        onKeyDown={handlePanelsKeyDown}
-        className={css.sideBarClosed}
-        index={panelIndex}
-        onBack={handleBack}
-      >
-        <Panel>
-          <Home
-            setPanelIndex={setPanelIndex}
-            setSelectedMovieId={setSelectedMovieId}
-            panelIndex={panelIndex}
-            isLoggedIn={isLoggedIn}
-          />
-        </Panel>
-        <Panel>
-          <MovieDetail
-            selectedMovieId={selectedMovieId}
-            setPanelIndex={setPanelIndex}
-            isLoggedIn={isLoggedIn}
-          />
-        </Panel>
-        <Panel>
-          <TvShowDetail
-            selectedMovieId={selectedMovieId}
-            setPanelIndex={setPanelIndex}
-            isLoggedIn={isLoggedIn}
-          />
-        </Panel>
-        <Panel>
-          <Movies
-            setPanelIndex={setPanelIndex}
-            setSelectedMovieId={setSelectedMovieId}
-            isLoggedIn={isLoggedIn}
-          />
-        </Panel>
-        <Panel>
-          <TvShows
-            setPanelIndex={setPanelIndex}
-            setSelectedMovieId={setSelectedMovieId}
-            isLoggedIn={isLoggedIn}
-          />
-        </Panel>
-        <Panel>
-          {panelIndex === 5 && <Profile isLoggedIn={isLoggedIn} setPanelIndex={setPanelIndex} />}
-        </Panel>
-        <Panel>
-          <Device />
-        </Panel>
-        <Panel>
-          <Login setIsLoggedIn={setIsLoggedIn} setPanelIndex={setPanelIndex} />
-        </Panel>
-      </Panels>
+			<Panels
+				{...rest}
+				onKeyDown={handlePanelsKeyDown}
+				className={css.sideBarClosed}
+				index={panelIndex}
+				onBack={handleBack}
+			>
+				<Panel>
+					<Home
+						setPanelIndex={setPanelIndex}
+						setSelectedMovieId={setSelectedMovieId}
+						panelIndex={panelIndex}
+						isLoggedIn={isLoggedIn}
+					/>
+				</Panel>
+				<Panel>
+					<MovieDetail
+						selectedMovieId={selectedMovieId}
+						setPanelIndex={setPanelIndex}
+						isLoggedIn={isLoggedIn}
+					/>
+				</Panel>
+				<Panel>
+					<TvShowDetail
+						selectedMovieId={selectedMovieId}
+						setPanelIndex={setPanelIndex}
+						isLoggedIn={isLoggedIn}
+					/>
+				</Panel>
+				<Panel>
+					<Movies
+						setPanelIndex={setPanelIndex}
+						setSelectedMovieId={setSelectedMovieId}
+						isLoggedIn={isLoggedIn}
+					/>
+				</Panel>
+				<Panel>
+					<TvShows
+						setPanelIndex={setPanelIndex}
+						setSelectedMovieId={setSelectedMovieId}
+						isLoggedIn={isLoggedIn}
+					/>
+				</Panel>
+				<Panel>
+					{!isLoggedIn ? (
+						<Login
+							setIsLoggedIn={setIsLoggedIn}
+							setPanelIndex={setPanelIndex}
+						/>
+					) : (
+						<Profile isLoggedIn={isLoggedIn} setPanelIndex={setPanelIndex} />
+					)}
+				</Panel>
+				{isLoggedIn && (
+					<>
+						<Panel>
+							<Device isLoggedIn={isLoggedIn} setPanelIndex={setPanelIndex} />
+						</Panel>
+						{/* Add future protected panels here */}
+					</>
+				)}
+			</Panels>
 
-      <Popup open={showLogoutPopup} onClose={handlePopupClose}>
-        Successfully logged out
-      </Popup>
-    </Row>
-  );
+			<Popup open={showLogoutPopup} onClose={handlePopupClose}>
+				Successfully logged out
+			</Popup>
+		</Row>
+	);
 };
 
 AppBase.propTypes = {
-  open: PropTypes.bool,
-  onToggleSidebar: PropTypes.func,
+	open: PropTypes.bool,
+	onToggleSidebar: PropTypes.func,
 };
 
 const App = Changeable({
-  prop: "open",
-  change: "onToggleSidebar",
+	prop: "open",
+	change: "onToggleSidebar",
 })(AppBase);
 
 export default ThemeDecorator(App);
