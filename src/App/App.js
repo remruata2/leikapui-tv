@@ -16,6 +16,7 @@ import Changeable from "@enact/ui/Changeable";
 import PropTypes from "prop-types";
 import Popup from "@enact/sandstone/Popup";
 import { StorageService } from "../utils/storage";
+import { Spotlight } from "@enact/spotlight";
 
 const AppBase = ({ open, onToggleSidebar, ...rest }) => {
 	const [panelIndex, setPanelIndex] = useState(0);
@@ -23,6 +24,7 @@ const AppBase = ({ open, onToggleSidebar, ...rest }) => {
 	const [sideBarDisplay, setSideBarDisplay] = useState(true);
 	const [isLoggedIn, setIsLoggedIn] = useState(false);
 	const [showLogoutPopup, setShowLogoutPopup] = useState(false);
+	const [navigationStack, setNavigationStack] = useState([0]);
 
 	useEffect(() => {
 		const checkAuthentication = async () => {
@@ -47,6 +49,11 @@ const AppBase = ({ open, onToggleSidebar, ...rest }) => {
 		};
 
 		checkAuthentication();
+	}, []);
+
+	useEffect(() => {
+		const token = window.localStorage.getItem("token");
+		setIsLoggedIn(!!token);
 	}, []);
 
 	useEffect(() => {
@@ -80,13 +87,24 @@ const AppBase = ({ open, onToggleSidebar, ...rest }) => {
 	};
 
 	const handleBack = () => {
-		console.log("handleBack called - Current panel index:", panelIndex);
-		if (panelIndex > 0) {
-			setPanelIndex((prevIndex) => prevIndex - 1);
-			return true; // Prevent default back behavior
-		}
-		console.log("handleBack - On first panel, allowing default behavior");
-		return false; // Allow default back behavior when on home panel
+		setNavigationStack((prev) => {
+			const newStack = prev.slice(0, -1);
+			// Force focus reset when navigating back
+			setTimeout(() => {
+				const currentPanel = newStack[newStack.length - 1] || 0;
+				const focusMap = {
+					0: '[data-spotlight-id="home-main"]',
+					1: '[data-spotlight-id="movies-grid"]',
+					2: '[data-spotlight-id="tvshows-grid"]',
+				};
+				const selector = focusMap[currentPanel];
+				if (selector) {
+					const element = document.querySelector(selector);
+					if (element) Spotlight.focus(element);
+				}
+			}, 50);
+			return newStack;
+		});
 	};
 
 	const handlePanelsKeyDown = (ev) => {
@@ -108,6 +126,11 @@ const AppBase = ({ open, onToggleSidebar, ...rest }) => {
 				isLoggedIn={isLoggedIn}
 				onLogout={onLogout}
 				sideBarDisplay={sideBarDisplay}
+				setSideBarDisplay={setSideBarDisplay}
+				handleLogout={() => {
+					window.localStorage.removeItem("token");
+					setIsLoggedIn(false);
+				}}
 			/>
 
 			<Panels

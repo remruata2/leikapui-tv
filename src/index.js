@@ -9,18 +9,18 @@ const App = SpotlightRootDecorator(AppView);
 import reportWebVitals from "./reportWebVitals";
 
 const appElement = (
-  <Router>
-    <App />
-  </Router>
+	<Router>
+		<App />
+	</Router>
 );
 
 // In a browser environment, render instead of exporting
 if (typeof window !== "undefined") {
-  if (ENACT_PACK_ISOMORPHIC) {
-    hydrateRoot(document.getElementById("root"), appElement);
-  } else {
-    createRoot(document.getElementById("root")).render(appElement);
-  }
+	if (ENACT_PACK_ISOMORPHIC) {
+		hydrateRoot(document.getElementById("root"), appElement);
+	} else {
+		createRoot(document.getElementById("root")).render(appElement);
+	}
 }
 
 export default appElement;

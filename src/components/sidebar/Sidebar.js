@@ -4,10 +4,8 @@ import {
 	RiHome5Fill,
 	RiMovie2Fill,
 	RiTvFill,
-	RiSettings4Fill,
 	RiUser3Fill,
 	RiDeviceFill,
-	RiShoppingBag3Fill,
 } from "react-icons/ri";
 import { BiLogOut, BiLogIn } from "react-icons/bi";
 import Item from "@enact/sandstone/Item";
@@ -58,11 +56,6 @@ const Sidebar = ({
 		// Add future settings items here
 	];
 
-	// Add login/logout to total menu items for navigation
-	const totalMenuItems = isLoggedIn
-		? menuItems.length + settingsItems.length + 1
-		: menuItems.length + 1;
-
 	const handleItemClick = (index, panelIdx) => {
 		console.log("Item clicked:", index, panelIdx);
 		// Redirect to login if trying to access protected routes
@@ -89,16 +82,8 @@ const Sidebar = ({
 	};
 
 	const handleSidebarBlur = (e) => {
-		// Check if the new focus target is still within the sidebar
-		const isStillInSidebar = e.currentTarget.contains(e.relatedTarget);
-		console.log("Sidebar blurred", {
-			isStillInSidebar,
-			currentTarget: e.currentTarget,
-			relatedTarget: e.relatedTarget,
-		});
-
-		// Only close sidebar if focus is actually leaving the sidebar
-		if (!isStillInSidebar) {
+		// Only close if focus moved to a non-null element outside sidebar
+		if (e.relatedTarget && !e.currentTarget.contains(e.relatedTarget)) {
 			onToggleSidebar({ open: false });
 		}
 	};
@@ -210,7 +195,14 @@ const Sidebar = ({
 				}
 			}
 		},
-		[focusedIndex, menuItems, settingsItems, isLoggedIn, onLogout]
+		[
+			focusedIndex,
+			menuItems,
+			settingsItems,
+			isLoggedIn,
+			onLogout,
+			handleItemClick,
+		]
 	);
 
 	if (!sideBarDisplay) {

@@ -1,231 +1,261 @@
 import { QRCodeCanvas } from "qrcode.react";
 import css from "./Login.module.less";
 import { useState, useEffect } from "react";
-import Item from "@enact/sandstone/Item";
-import Button from "@enact/sandstone/Button";
 import { StorageService } from "../../utils/storage";
+import Button from "@enact/sandstone/Button";
+import { FaUserCircle } from "react-icons/fa";
 
-const Login = ({ setPanelIndex }) => {
-  const [qrCodeUrl, setQrCodeUrl] = useState("");
-  const [loginStatus, setLoginStatus] = useState("waiting");
-  const [selectedMethod, setSelectedMethod] = useState("qr");
-  const [focusedItem, setFocusedItem] = useState("qr");
+const Login = ({ setPanelIndex, setIsLoggedIn }) => {
+	const [qrCodeUrl, setQrCodeUrl] = useState("");
+	const [loginStatus, setLoginStatus] = useState("waiting");
+	const [selectedMethod, setSelectedMethod] = useState("qr");
+	const [focusedItem, setFocusedItem] = useState("qr");
 
-  const API_URL = process.env.REACT_APP_API_URL;
+	const API_URL = process.env.REACT_APP_API_URL;
+	const TEST_TOKEN = process.env.REACT_APP_TEST_TOKEN;
 
-  const getStatusMessage = () => {
-    switch (loginStatus) {
-      case "generating":
-        return "Generating QR code...";
-      case "waiting":
-        return "Open your mobile app and scan this code";
-      case "success":
-        return "Login successful! Redirecting...";
-      case "error":
-        return "Error occurred. Please try again.";
-      default:
-        return "";
-    }
-  };
+	const logo = require("../../assets/icon-darkbg.png");
 
-  const saveAuthData = (token, user) => {
-    try {
-      // Store in localStorage
-      StorageService.setItem("authData", { token, user });
-      console.log("[TV Login] Auth data saved successfully");
+	const getStatusMessage = () => {
+		switch (loginStatus) {
+			case "generating":
+				return "Generating QR code...";
+			case "waiting":
+				return "Open your mobile app and scan this code";
+			case "success":
+				return "Login successful! Redirecting...";
+			case "error":
+				return "Error occurred. Please try again.";
+			default:
+				return "";
+		}
+	};
 
-      // Register device
-      registerDevice(token);
+	const saveAuthData = (token, user) => {
+		try {
+			// Store in localStorage
+			StorageService.setItem("authData", { token, user });
+			console.log("[TV Login] Auth data saved successfully");
 
-      // Set success status and navigate
-      setLoginStatus("success");
-      console.log("[TV Login] Redirecting to home panel");
-      setPanelIndex(0);
-    } catch (error) {
-      console.error("[TV Login] Failed to save auth data:", error);
-      setLoginStatus("error");
-      // Still redirect even if storage fails
-      setPanelIndex(0);
-    }
-  };
+			// Register device
+			registerDevice(token);
 
-  const registerDevice = async (token) => {
-    try {
-      // Generate a UUID using a simple function since crypto might not be available
-      const generateUUID = () => {
-        return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
-          /[xy]/g,
-          function (c) {
-            const r = (Math.random() * 16) | 0;
-            const v = c === "x" ? r : (r & 0x3) | 0x8;
-            return v.toString(16);
-          }
-        );
-      };
+			// Set success status and navigate
+			setLoginStatus("success");
+			console.log("[TV Login] Redirecting to home panel");
+			setPanelIndex(0);
+		} catch (error) {
+			console.error("[TV Login] Failed to save auth data:", error);
+			setLoginStatus("error");
+			// Still redirect even if storage fails
+			setPanelIndex(0);
+		}
+	};
 
-      const deviceInfo = {
-        deviceId: generateUUID(),
-        deviceBrand: "LG",
-        modelName: "WebOS TV",
-        platform: "webos",
-        osVersion: "unknown",
-        isDevice: true,
-        deviceType: "tv",
-        userAgent: window.navigator?.userAgent || "WebOS TV",
-        language: window.navigator?.language || "en",
-      };
+	const registerDevice = async (token) => {
+		try {
+			// Generate a UUID using a simple function since crypto might not be available
+			const generateUUID = () => {
+				return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(
+					/[xy]/g,
+					function (c) {
+						const r = (Math.random() * 16) | 0;
+						const v = c === "x" ? r : (r & 0x3) | 0x8;
+						return v.toString(16);
+					}
+				);
+			};
 
-      const response = await fetch(`${API_URL}/api/devices`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(deviceInfo),
-      });
+			const deviceInfo = {
+				deviceId: generateUUID(),
+				deviceBrand: "LG",
+				modelName: "WebOS TV",
+				platform: "webos",
+				osVersion: "unknown",
+				isDevice: true,
+				deviceType: "tv",
+				userAgent: window.navigator?.userAgent || "WebOS TV",
+				language: window.navigator?.language || "en",
+			};
 
-      if (!response.ok) {
-        throw new Error(`Failed to register device: ${response.status}`);
-      }
+			const response = await fetch(`${API_URL}/api/devices`, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+					Authorization: `Bearer ${token}`,
+				},
+				body: JSON.stringify(deviceInfo),
+			});
 
-      const savedDevice = await response.json();
-      console.log("[TV Login] Device registered successfully:", savedDevice);
+			if (!response.ok) {
+				throw new Error(`Failed to register device: ${response.status}`);
+			}
 
-      // Store device ID for future reference
-      StorageService.setItem("deviceId", deviceInfo.deviceId);
-    } catch (error) {
-      console.error("[TV Login] Failed to register device:", error);
-      // Non-blocking error - don't prevent login completion
-    }
-  };
+			const savedDevice = await response.json();
+			console.log("[TV Login] Device registered successfully:", savedDevice);
 
-  useEffect(() => {
-    let pollInterval;
+			// Store device ID for future reference
+			StorageService.setItem("deviceId", deviceInfo.deviceId);
+		} catch (error) {
+			console.error("[TV Login] Failed to register device:", error);
+			// Non-blocking error - don't prevent login completion
+		}
+	};
 
-    const fetchDeviceCode = async () => {
-      try {
-        // Check if already authenticated
-        const storedAuth = StorageService.getItem("authData");
-        if (storedAuth) {
-          console.log("[TV Login] Found existing auth data, redirecting");
-          setPanelIndex(0); // Go to home panel
-          return;
-        }
+	const handleTestLogin = async () => {
+		try {
+			const response = await fetch(`${API_URL}/auth/test-login`, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					token: TEST_TOKEN,
+				}),
+			});
+			console.log("API URL:", API_URL);
+			console.log("Token Env:", process.env.REACT_APP_TEST_TOKEN);
+			const data = await response.json();
 
-        setLoginStatus("generating");
-        const response = await fetch(`${API_URL}/auth/device-code`, {
-          method: "POST",
-        });
-        const data = await response.json();
-        console.log("[TV Login] Device Code Response:", data);
+			if (response.ok) {
+				window.localStorage.setItem("token", data.token);
+				setIsLoggedIn(true);
+				saveAuthData(data.token, data.user);
+			} else {
+				console.error("Test login failed:", data.message);
+			}
+		} catch (error) {
+			console.error("Error during test login:", error);
+		}
+	};
 
-        const qrUrl = `leikapui://verify/${data.user_code}`;
-        setQrCodeUrl(qrUrl);
-        setLoginStatus("waiting");
+	useEffect(() => {
+		let pollInterval;
 
-        pollInterval = setInterval(async () => {
-          try {
-            console.log("[TV Login] Polling for authentication...");
-            const pollResponse = await fetch(`${API_URL}/auth/poll`, {
-              method: "POST",
-              body: JSON.stringify({ device_code: data.user_code }),
-              headers: {
-                "Content-Type": "application/json",
-              },
-            });
+		const fetchDeviceCode = async () => {
+			try {
+				// Check if already authenticated
+				const storedAuth = StorageService.getItem("authData");
+				if (storedAuth) {
+					console.log("[TV Login] Found existing auth data, redirecting");
+					setPanelIndex(0); // Go to home panel
+					return;
+				}
 
-            if (!pollResponse.ok) {
-              throw new Error(`Poll request failed: ${pollResponse.status}`);
-            }
+				setLoginStatus("generating");
+				const response = await fetch(`${API_URL}/auth/device-code`, {
+					method: "POST",
+				});
+				const data = await response.json();
+				console.log("[TV Login] Device Code Response:", data);
 
-            const pollData = await pollResponse.json();
-            console.log("[TV Login] Poll response:", pollData);
+				const qrUrl = `leikapui://verify/${data.user_code}`;
+				setQrCodeUrl(qrUrl);
+				setLoginStatus("waiting");
 
-            if (pollData.authenticated) {
-              console.log("[TV Login] Authentication successful");
-              clearInterval(pollInterval);
-              saveAuthData(pollData.token, pollData.user);
-            }
-          } catch (error) {
-            console.error("[TV Login] Error during polling:", error);
-            setLoginStatus("error");
-            clearInterval(pollInterval);
-          }
-        }, 5000);
-      } catch (error) {
-        console.error("[TV Login] Error during device code fetch:", error);
-        setLoginStatus("error");
-      }
-    };
+				pollInterval = setInterval(async () => {
+					try {
+						console.log("[TV Login] Polling for authentication...");
+						const pollResponse = await fetch(`${API_URL}/auth/poll`, {
+							method: "POST",
+							body: JSON.stringify({ device_code: data.user_code }),
+							headers: {
+								"Content-Type": "application/json",
+							},
+						});
 
-    // Only start device code flow if we're on the login panel
-    if (selectedMethod === "qr") {
-      fetchDeviceCode();
-    }
+						if (!pollResponse.ok) {
+							throw new Error(`Poll request failed: ${pollResponse.status}`);
+						}
 
-    return () => {
-      if (pollInterval) {
-        console.log("[TV Login] Cleaning up poll interval");
-        clearInterval(pollInterval);
-      }
-    };
-  }, [setPanelIndex, selectedMethod]);
+						const pollData = await pollResponse.json();
+						console.log("[TV Login] Poll response:", pollData);
 
-  const handleKeyDown = (e) => {
-    if (e.keyCode === 37 || e.keyCode === 39) {
-      // Left/Right arrows
-      setFocusedItem(focusedItem === "qr" ? "google" : "qr");
-    } else if (e.keyCode === 13) {
-      // Enter key
-      setSelectedMethod(focusedItem);
-    }
-  };
+						if (pollData.authenticated) {
+							console.log("[TV Login] Authentication successful");
+							clearInterval(pollInterval);
+							setIsLoggedIn(true);
+							saveAuthData(pollData.token, pollData.user);
+						}
+					} catch (error) {
+						console.error("[TV Login] Error during polling:", error);
+						setLoginStatus("error");
+						clearInterval(pollInterval);
+					}
+				}, 5000);
+			} catch (error) {
+				console.error("[TV Login] Error during device code fetch:", error);
+				setLoginStatus("error");
+			}
+		};
 
-  const handleGoogleLogin = async () => {
-    try {
-      const response = await fetch(`${API_URL}/auth/google-tv`, {
-        method: "POST",
-      });
-      const data = await response.json();
-      window.location.href = data.authUrl;
-    } catch (error) {
-      console.error("Error initiating Google login:", error);
-    }
-  };
+		// Only start device code flow if we're on the login panel
+		if (selectedMethod === "qr") {
+			fetchDeviceCode();
+		}
 
-  return (
-    <div className={css.login} onKeyDown={handleKeyDown}>
-      <div className={css.siteInfo}>
-        <h1>Leikapui Studios TV</h1>
-        <p>Your Entertainment Hub</p>
-      </div>
-      <div className={css.loginForm}>
-        <div className={css.loginOptions}>
-          <div className={css.option}>
-            <h2>Quick Login with Mobile</h2>
-            <div className={css.qrContainer}>
-              {qrCodeUrl ? (
-                <QRCodeCanvas
-                  value={qrCodeUrl}
-                  size={180}
-                  level="H"
-                  includeMargin={true}
-                  style={{
-                    padding: "0.8rem",
-                    background: "white",
-                    borderRadius: "8px",
-                  }}
-                />
-              ) : (
-                <div className={css.loading}>Loading QR Code...</div>
-              )}
-              <p className={css.status}>{getStatusMessage()}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+		return () => {
+			if (pollInterval) {
+				console.log("[TV Login] Cleaning up poll interval");
+				clearInterval(pollInterval);
+			}
+		};
+	}, [setPanelIndex, selectedMethod, setIsLoggedIn]);
+
+	const handleKeyDown = (e) => {
+		if (e.keyCode === 37 || e.keyCode === 39) {
+			// Left/Right arrows
+			setFocusedItem(focusedItem === "qr" ? "google" : "qr");
+		} else if (e.keyCode === 13) {
+			// Enter key
+			setSelectedMethod(focusedItem);
+		}
+	};
+
+	return (
+		<div className={css.login} onKeyDown={handleKeyDown}>
+			<div className={css.siteInfo}>
+				<img
+					src={logo}
+					alt="Leikapui Studios TV"
+					width="400px"
+					height="400px"
+				/>
+				<p>Your Entertainment Hub</p>
+			</div>
+			<div className={css.loginForm}>
+				<div className={css.loginOptions}>
+					<div className={css.option}>
+						<h2>Quick Login with Mobile</h2>
+						<div className={css.qrContainer}>
+							{qrCodeUrl ? (
+								<QRCodeCanvas
+									value={qrCodeUrl}
+									size={180}
+									level="H"
+									includeMargin={true}
+									style={{
+										padding: "0.8rem",
+										background: "white",
+										borderRadius: "8px",
+									}}
+								/>
+							) : (
+								<div className={css.loading}>Loading QR Code...</div>
+							)}
+							<p className={css.status}>{getStatusMessage()}</p>
+						</div>
+					</div>
+
+					{/* Test Login Button */}
+					<Button className={css.testLoginButton} onClick={handleTestLogin}>
+						<FaUserCircle className={css.buttonIcon} />
+						<p className={css.buttonText}>Test Login</p>
+					</Button>
+				</div>
+			</div>
+		</div>
+	);
 };
 
 export default Login;
