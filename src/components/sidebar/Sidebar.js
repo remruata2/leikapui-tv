@@ -48,12 +48,6 @@ const Sidebar = ({
 			label: "Profile",
 			index: 5,
 		},
-		{
-			icon: <RiDeviceFill className={css.icon} />,
-			label: "Devices",
-			index: 6,
-		},
-		// Add future settings items here
 	];
 
 	const handleItemClick = (index, panelIdx) => {

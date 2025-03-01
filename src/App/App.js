@@ -196,7 +196,11 @@ const AppBase = ({ open, onToggleSidebar, ...rest }) => {
 				)}
 			</Panels>
 
-			<Popup open={showLogoutPopup} onClose={handlePopupClose}>
+			<Popup
+				open={showLogoutPopup}
+				onClose={handlePopupClose}
+				noAutoDismiss={false}
+			>
 				Successfully logged out
 			</Popup>
 		</Row>

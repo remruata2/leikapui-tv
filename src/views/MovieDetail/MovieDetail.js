@@ -22,6 +22,7 @@ import css from "./MovieDetail.module.less";
 const MovieDetailBase = ({ selectedMovieId, setPanelIndex }) => {
 	const [movie, setMovie] = useState(null);
 	const [showPlayer, setShowPlayer] = useState(false);
+	const [showRentPopup, setShowRentPopup] = useState(false);
 	const [user, setUser] = useState(null);
 	const [purchaseStatus, setPurchaseStatus] = useState(null);
 
@@ -100,7 +101,7 @@ const MovieDetailBase = ({ selectedMovieId, setPanelIndex }) => {
 	};
 
 	const handleRentClick = () => {
-		console.log("Rent functionality to be implemented");
+		setShowRentPopup(true);
 	};
 
 	const renderActionButton = () => {
@@ -231,6 +232,25 @@ const MovieDetailBase = ({ selectedMovieId, setPanelIndex }) => {
 				style={{ width: "100vw", height: "100vh" }}
 			>
 				<VideoPlayerComponent source={movie?.video_url} />
+			</Popup>
+
+			<Popup
+				open={showRentPopup}
+				onClose={() => setShowRentPopup(false)}
+				closeButton
+				spotlightRestrict="self-only"
+				style={{ padding: "2rem" }}
+			>
+				<div className={css.rentPopupContent}>
+					<BodyText>
+						Please rent {movie.title} at mobile app so you can watch it here.
+					</BodyText>
+					<div className={css.rentPopupButtons}>
+						<SpottableButton onClick={() => setShowRentPopup(false)}>
+							Close
+						</SpottableButton>
+					</div>
+				</div>
 			</Popup>
 		</div>
 	);

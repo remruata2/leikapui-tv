@@ -8,6 +8,7 @@ import Popup from "@enact/sandstone/Popup";
 import { StorageService } from "../../utils/storage";
 import css from "./Profile.module.less";
 import { FaUser, FaEnvelope, FaPhone, FaCalendarAlt } from "react-icons/fa";
+import deviceInfo from "@enact/webos/deviceinfo";
 
 const Profile = ({ isLoggedIn, setPanelIndex }) => {
 	const [profile, setProfile] = useState(null);
@@ -17,36 +18,60 @@ const Profile = ({ isLoggedIn, setPanelIndex }) => {
 	const [showErrorPopup, setShowErrorPopup] = useState(false);
 	const [errorMessage, setErrorMessage] = useState("");
 
+	// Function to check the SDK version
+	const checkSdkVersion = () => {
+		deviceInfo((info) => {
+			if (info && info.sdkVersion) {
+				console.log("webOS SDK Version:", info.sdkVersion);
+			} else {
+				console.log("SDK version not available or device info failed:", info);
+			}
+		});
+	};
+
+	// Call the function
+	checkSdkVersion();
 	const loadUserProfile = async () => {
 		try {
 			const authData = StorageService.getItem("authData");
-			console.log(authData);
+			console.log("Auth Data", authData);
 
-			if (!authData || !authData.user || !authData.user.id) {
+			if (!authData || !authData.user || !authData.user._id) {
 				console.error("No auth data found");
 				setErrorMessage("Authentication required");
 				setShowErrorPopup(true);
 				return;
 			}
 
-			const response = await fetch(
-				`${process.env.REACT_APP_API_URL}/api/users/tvProfile/${authData.user.id}`,
-				{
-					method: "GET",
-					headers: {
-						"Content-Type": "application/json",
-					},
-					credentials: "include",
+			if (authData.user.role !== "tester") {
+				const response = await fetch(
+					`${process.env.REACT_APP_API_URL}/api/users/tvProfile/${authData.user._id}`,
+					{
+						method: "GET",
+						headers: {
+							"Content-Type": "application/json",
+						},
+						credentials: "include",
+					}
+				);
+				if (!response.ok) {
+					throw new Error("Failed to load profile");
 				}
-			);
-
-			if (!response.ok) {
-				throw new Error("Failed to load profile");
+				const userData = await response.json();
+				setProfile(userData);
+				setEditedProfile(userData);
+			} else {
+				setProfile({
+					name: "Tester",
+					email: "tester@leikapui.com",
+					phone: "1234567890",
+				});
+				setEditedProfile({
+					name: "Tester",
+					email: "tester@leikapui.com",
+					phone: "1234567890",
+				});
 			}
-
-			const userData = await response.json();
-			setProfile(userData);
-			setEditedProfile(userData);
 		} catch (error) {
 			console.error("Error loading profile:", error);
 			setErrorMessage("Failed to load profile");
