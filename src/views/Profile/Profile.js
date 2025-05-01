@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import Input from "@enact/sandstone/Input";
 import { Cell, Row } from "@enact/ui/Layout";
 import Scroller from "@enact/sandstone/Scroller";
 import Icon from "@enact/sandstone/Icon";
@@ -17,6 +16,24 @@ const Profile = ({ isLoggedIn, setPanelIndex }) => {
 	const [showSuccessPopup, setShowSuccessPopup] = useState(false);
 	const [showErrorPopup, setShowErrorPopup] = useState(false);
 	const [errorMessage, setErrorMessage] = useState("");
+
+	// Helper function to format date with validation
+	const formatDate = (dateString) => {
+		if (!dateString) return "Not available";
+
+		const date = new Date(dateString);
+
+		// Check if date is valid
+		if (isNaN(date.getTime())) {
+			return "Not available";
+		}
+
+		return date.toLocaleDateString(undefined, {
+			year: "numeric",
+			month: "long",
+			day: "numeric",
+		});
+	};
 
 	// Function to check the SDK version
 	const checkSdkVersion = () => {
@@ -36,41 +53,90 @@ const Profile = ({ isLoggedIn, setPanelIndex }) => {
 			const authData = StorageService.getItem("authData");
 			console.log("Auth Data", authData);
 
-			if (!authData || !authData.user || !authData.user._id) {
+			if (!authData || !authData.user) {
 				console.error("No auth data found");
-				setErrorMessage("Authentication required");
-				setShowErrorPopup(true);
+				// Instead of error popup, set a fallback profile
+				setProfile({
+					username: "Guest User",
+					email: "Please log in to view your profile",
+					phone: "",
+					createdAt: new Date().toISOString(),
+				});
+				setEditedProfile({
+					username: "Guest User",
+					email: "Please log in to view your profile",
+					phone: "",
+				});
 				return;
 			}
 
-			if (authData.user.role !== "tester") {
-				const response = await fetch(
-					`${process.env.REACT_APP_API_URL}/api/users/tvProfile/${authData.user._id}`,
-					{
-						method: "GET",
-						headers: {
-							"Content-Type": "application/json",
-						},
-						credentials: "include",
-					}
-				);
-				if (!response.ok) {
-					throw new Error("Failed to load profile");
-				}
-				const userData = await response.json();
-				setProfile(userData);
-				setEditedProfile(userData);
-			} else {
+			// If we have valid auth data, use it directly or fetch from API
+			if (authData.user.role === "tester" || !authData.user._id) {
 				setProfile({
-					name: "Tester",
-					email: "tester@leikapui.com",
-					phone: "1234567890",
+					username: authData.user.username || "Tester",
+					email: authData.user.email || "tester@leikapui.com",
+					phone: authData.user.phone || "1234567890",
+					createdAt: authData.user.createdAt || new Date().toISOString(),
 				});
 				setEditedProfile({
-					name: "Tester",
-					email: "tester@leikapui.com",
-					phone: "1234567890",
+					username: authData.user.username || "Tester",
+					email: authData.user.email || "tester@leikapui.com",
+					phone: authData.user.phone || "1234567890",
 				});
+			} else {
+				// Try to fetch from API
+				try {
+					console.log(
+						"Fetching profile from API for user ID:",
+						authData.user._id
+					);
+					const response = await fetch(
+						`${process.env.REACT_APP_API_URL}/api/users/tvProfile/${authData.user._id}`,
+						{
+							method: "GET",
+							headers: {
+								"Content-Type": "application/json",
+								Authorization: `Bearer ${authData.token}`,
+							},
+							credentials: "include",
+						}
+					);
+
+					if (!response.ok) {
+						throw new Error(
+							`Failed to load profile from API: ${response.status}`
+						);
+					}
+
+					const userData = await response.json();
+					console.log("API user data received:", userData);
+
+					// Ensure createdAt is present or use a fallback
+					const userDataWithDefaults = {
+						...userData,
+						createdAt:
+							userData.createdAt ||
+							authData.user.createdAt ||
+							new Date().toISOString(),
+					};
+
+					setProfile(userDataWithDefaults);
+					setEditedProfile(userDataWithDefaults);
+					console.log("Profile set with data:", userDataWithDefaults);
+				} catch (apiError) {
+					console.error(
+						"API error, falling back to stored user data:",
+						apiError
+					);
+					// Fallback to using the auth data directly
+					const fallbackProfile = {
+						...authData.user,
+						createdAt: authData.user.createdAt || new Date().toISOString(),
+					};
+					console.log("Using fallback profile:", fallbackProfile);
+					setProfile(fallbackProfile);
+					setEditedProfile(fallbackProfile);
+				}
 			}
 		} catch (error) {
 			console.error("Error loading profile:", error);
@@ -79,13 +145,58 @@ const Profile = ({ isLoggedIn, setPanelIndex }) => {
 		}
 	};
 
+	console.log("User data:", profile);
+
 	useEffect(() => {
-		if (!isLoggedIn) {
-			setPanelIndex(6); // Redirect to login
-			return;
-		}
-		loadUserProfile();
-	}, [isLoggedIn, setPanelIndex]);
+		// We're already inside the Profile component, so we don't need to redirect
+		// Instead, just try to load the profile with fallback data if auth fails
+		const loadProfileData = async () => {
+			try {
+				const authData = StorageService.getItem("authData");
+				console.log(
+					"Profile: Auth data from storage:",
+					authData ? "Found" : "Not found"
+				);
+
+				// Check if we have auth data for API call
+				if (authData && authData.user) {
+					// Always get fresh data from the API
+					await loadUserProfile();
+					return;
+				}
+
+				// If no auth data, use fallback profile
+				console.log("Profile: No auth data, using fallback profile");
+				setProfile({
+					username: "Guest User",
+					email: "Please log in to view your profile",
+					phone: "",
+					createdAt: new Date().toISOString(),
+				});
+				setEditedProfile({
+					username: "Guest User",
+					email: "Please log in to view your profile",
+					phone: "",
+				});
+			} catch (error) {
+				console.error("Profile: Error loading profile:", error);
+				// Set a fallback profile with an error message
+				setProfile({
+					username: "Guest User",
+					email: "Please log in to view your profile",
+					phone: "",
+					createdAt: new Date().toISOString(),
+				});
+				setEditedProfile({
+					username: "Guest User",
+					email: "Please log in to view your profile",
+					phone: "",
+				});
+			}
+		};
+
+		loadProfileData();
+	}, [isLoggedIn]);
 
 	const validateProfileData = (data) => {
 		if (data.phone && !/^\d{10}$/.test(data.phone)) {
@@ -184,42 +295,9 @@ const Profile = ({ isLoggedIn, setPanelIndex }) => {
 						<FaCalendarAlt className={css.profileIcon} />
 						<div className={css.profileInfo}>
 							<label>Member Since</label>
-							<span>{new Date(profile.createdAt).toLocaleDateString()}</span>
+							<span>{formatDate(profile.createdAt)}</span>
 						</div>
 					</div>
-
-					<Row className={css.detailRow}>
-						<Cell size="40%">
-							<BodyText>Username:</BodyText>
-						</Cell>
-						<Cell>
-							{editMode ? (
-								<Input
-									value={editedProfile.username}
-									onChange={(e) => handleInputChange("username", e.value)}
-								/>
-							) : (
-								<BodyText>{profile.username}</BodyText>
-							)}
-						</Cell>
-					</Row>
-
-					<Row className={css.detailRow}>
-						<Cell size="40%">
-							<BodyText>Phone:</BodyText>
-						</Cell>
-						<Cell>
-							{editMode ? (
-								<Input
-									value={editedProfile.phone || ""}
-									onChange={(e) => handleInputChange("phone", e.value)}
-									type="tel"
-								/>
-							) : (
-								<BodyText>{profile.phone || "Not provided"}</BodyText>
-							)}
-						</Cell>
-					</Row>
 
 					{profile.purchasedMovies && profile.purchasedMovies.length > 0 && (
 						<Row className={css.detailRow}>

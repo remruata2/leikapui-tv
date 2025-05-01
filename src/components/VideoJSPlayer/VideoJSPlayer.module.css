@@ -1,0 +1,66 @@
+.videoJsPlayer {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100vw;
+	height: 100vh;
+	background: #000;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	overflow: hidden;
+	z-index: 9999; /* Ensure player is above everything else */
+}
+
+/* Video.js core player container */
+.videoJsPlayer :global(.video-js) {
+	width: 100% !important;
+	height: 100% !important;
+	min-height: 300px;
+	background: #000;
+	font-size: 1.2rem;
+	outline: none;
+}
+
+.videoJsPlayer :global(.vjs-control-bar) {
+	font-size: 1.2rem;
+	background: rgba(20, 20, 20, 0.95);
+	border-radius: 0 0 1rem 1rem;
+	display: flex !important;
+	visibility: visible !important;
+	opacity: 1 !important;
+	background-color: rgba(0, 0, 0, 0.7);
+	bottom: 0;
+	position: absolute;
+	width: 100%;
+	z-index: 10;
+}
+
+.videoJsPlayer :global(.vjs-big-play-button) {
+	font-size: 2rem;
+	border-radius: 2rem;
+	background: rgba(229, 9, 20, 0.9);
+	color: #fff;
+	border: none;
+	transition: background 0.2s;
+}
+
+.videoJsPlayer :global(.vjs-big-play-button):focus {
+	outline: 2px solid #fff;
+	background: rgba(229, 9, 20, 1);
+}
+
+.videoJsPlayer :global(.vjs-control:focus) {
+	outline: 2px solid #fff;
+}
+
+.videoJsPlayer :global(.vjs-button) {
+	cursor: pointer;
+	outline: none;
+}
+
+.videoJsPlayer :global(.vjs-button:focus),
+.videoJsPlayer :global(.vjs-button:hover) {
+	background-color: rgba(255, 255, 255, 0.2);
+	outline: 2px solid white;
+}

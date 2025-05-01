@@ -1,0 +1,16 @@
+/* Force transparent background on all Enact menu items */
+[data-no-background="true"] div,
+[data-no-background="true"] div[class*="enact"],
+[data-no-background="true"] div[class*="spotlight"],
+[data-no-background="true"] div[class*="spottable"],
+[data-no-background="true"] div[class*="Item"],
+[data-no-background="true"] div[class*="neutral"],
+[data-no-background="true"] div[class*="focused"],
+[data-no-background="true"] div[class*="active"],
+[data-no-background="true"] div[class*="selected"],
+[data-no-background="true"] > div,
+[data-no-background="true"] > * {
+    background-color: transparent !important;
+    background-image: none !important;
+    background: none !important;
+}

@@ -49,6 +49,7 @@ const MoviesBase = ({ setPanelIndex, setSelectedMovieId }) => {
 						style={{
 							width: itemWidth,
 							height: (itemWidth * 9) / 16,
+							marginTop: 16,
 						}}
 					>
 						{items[itemIndex].title}

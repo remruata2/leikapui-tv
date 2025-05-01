@@ -22,6 +22,11 @@ body {
 	z-index: 0;
 }
 
+.panels {
+	position: relative;
+	z-index: 1;
+}
+
 .sidebar {
 	background-color: #1b1b1b;
 	color: rgb(253, 253, 253);
@@ -37,22 +42,20 @@ body {
 	padding-left: 0;
 	margin-left: 0;
 	opacity: 0.8;
-	z-index: 1000;
 	width: 9%;
+	z-index: 3; /* Base z-index when closed */
 
 	&.sideBarOpened {
 		width: 20%;
+		z-index: 10; /* Higher z-index when opened to overlay content */
 	}
 }
 
 .mainContent {
 	flex: 1;
-	margin-left: 7%;
+	margin-left: 9%; /* Match the closed sidebar width */
 	transition: margin-left 0.3s ease-in-out;
-
-	&.sideBarOpened {
-		margin-left: 20%;
-	}
+	/* Remove the margin adjustment when sidebar is open */
 }
 
 .sideBarOpened {
@@ -68,4 +71,13 @@ body {
 
 .sideBarDisplay {
 	display: none;
+}
+
+.videoPlayerPanel {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100vw;
+	height: 100vh;
+	z-index: 4;
 }

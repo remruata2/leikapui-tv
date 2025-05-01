@@ -3,6 +3,12 @@ import { createRoot, hydrateRoot } from "react-dom/client";
 import { BrowserRouter as Router } from "react-router-dom";
 import AppView from "./App";
 import SpotlightRootDecorator from "@enact/spotlight/SpotlightRootDecorator";
+if (typeof window !== "undefined") {
+	const link = document.createElement("link");
+	link.rel = "stylesheet";
+	link.href = "/video-js.css";
+	document.head.appendChild(link);
+}
 
 const App = SpotlightRootDecorator(AppView);
 

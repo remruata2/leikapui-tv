@@ -21,11 +21,13 @@ const Login = ({ setPanelIndex, setIsLoggedIn }) => {
 			case "generating":
 				return "Generating QR code...";
 			case "waiting":
-				return "Open your mobile app and scan this code";
+				return "Open your mobile app->Open Menu->Go to Tv Login->Scan this code";
 			case "success":
 				return "Login successful! Redirecting...";
 			case "error":
 				return "Error occurred. Please try again.";
+			case "device_limit":
+				return "Maximum number of devices (5) reached. Please remove an existing device from your account and try again.";
 			default:
 				return "";
 		}
@@ -37,13 +39,22 @@ const Login = ({ setPanelIndex, setIsLoggedIn }) => {
 			StorageService.setItem("authData", { token, user });
 			console.log("[TV Login] Auth data saved successfully");
 
-			// Register device
-			registerDevice(token);
-
-			// Set success status and navigate
-			setLoginStatus("success");
-			console.log("[TV Login] Redirecting to home panel");
-			setPanelIndex(0);
+			// Register device and check if successful
+			registerDevice(token).then(success => {
+				if (success) {
+					// Set success status and navigate
+					setLoginStatus("success");
+					console.log("[TV Login] Redirecting to home panel");
+					setPanelIndex(0);
+				} else if (loginStatus !== "device_limit") {
+					// Only set error if it's not already set to device_limit
+					setLoginStatus("error");
+					// Don't redirect if we hit device limit
+					if (loginStatus !== "device_limit") {
+						setPanelIndex(0);
+					}
+				}
+			});
 		} catch (error) {
 			console.error("[TV Login] Failed to save auth data:", error);
 			setLoginStatus("error");
@@ -66,8 +77,19 @@ const Login = ({ setPanelIndex, setIsLoggedIn }) => {
 				);
 			};
 
+			// Check if we already have a device ID stored
+			let deviceId = StorageService.getItem("deviceId");
+			
+			// If no device ID stored, generate a new one
+			if (!deviceId) {
+				deviceId = generateUUID();
+				console.log("[TV Login] Generated new device ID:", deviceId);
+			} else {
+				console.log("[TV Login] Using existing device ID:", deviceId);
+			}
+
 			const deviceInfo = {
-				deviceId: generateUUID(),
+				deviceId: deviceId,
 				deviceBrand: "LG",
 				modelName: "WebOS TV",
 				platform: "webos",
@@ -78,6 +100,39 @@ const Login = ({ setPanelIndex, setIsLoggedIn }) => {
 				language: window.navigator?.language || "en",
 			};
 
+			// First, try to get existing devices to check if this device is already registered
+			const checkResponse = await fetch(`${API_URL}/api/devices`, {
+				method: "GET",
+				headers: {
+					Authorization: `Bearer ${token}`,
+				},
+			});
+
+			if (checkResponse.ok) {
+				const devices = await checkResponse.json();
+				const existingDevice = devices.find(d => d.deviceId === deviceId);
+				
+				if (existingDevice) {
+					console.log("[TV Login] Device already registered, updating last used time");
+					// Update the device's last used time
+					const updateResponse = await fetch(`${API_URL}/api/devices/${deviceId}`, {
+						method: "PUT",
+						headers: {
+							"Content-Type": "application/json",
+							Authorization: `Bearer ${token}`,
+						},
+						body: JSON.stringify({ online: true }),
+					});
+					
+					if (updateResponse.ok) {
+						console.log("[TV Login] Device status updated successfully");
+						return true;
+					}
+				}
+			}
+
+			// If we reach here, either the device doesn't exist or we failed to update it
+			// Register the device
 			const response = await fetch(`${API_URL}/api/devices`, {
 				method: "POST",
 				headers: {
@@ -87,18 +142,27 @@ const Login = ({ setPanelIndex, setIsLoggedIn }) => {
 				body: JSON.stringify(deviceInfo),
 			});
 
+			const responseData = await response.json();
+
 			if (!response.ok) {
+				// Check if the error is due to device limit
+				if (response.status === 400 && responseData.message && responseData.message.includes("Maximum number of devices")) {
+					console.error("[TV Login] Device limit reached:", responseData.message);
+					setLoginStatus("device_limit");
+					return false;
+				}
 				throw new Error(`Failed to register device: ${response.status}`);
 			}
 
-			const savedDevice = await response.json();
-			console.log("[TV Login] Device registered successfully:", savedDevice);
+			console.log("[TV Login] Device registered successfully:", responseData);
 
 			// Store device ID for future reference
-			StorageService.setItem("deviceId", deviceInfo.deviceId);
+			StorageService.setItem("deviceId", deviceId);
+			return true;
 		} catch (error) {
 			console.error("[TV Login] Failed to register device:", error);
-			// Non-blocking error - don't prevent login completion
+			// Return false to indicate failure
+			return false;
 		}
 	};
 
@@ -138,6 +202,7 @@ const Login = ({ setPanelIndex, setIsLoggedIn }) => {
 				const storedAuth = StorageService.getItem("authData");
 				if (storedAuth) {
 					console.log("[TV Login] Found existing auth data, redirecting");
+					setIsLoggedIn(true);
 					setPanelIndex(0); // Go to home panel
 					return;
 				}
@@ -247,11 +312,11 @@ const Login = ({ setPanelIndex, setIsLoggedIn }) => {
 						</div>
 					</div>
 
-					{/* Test Login Button */}
+					{/* Test Login Button
 					<Button className={css.testLoginButton} onClick={handleTestLogin}>
 						<FaUserCircle className={css.buttonIcon} />
 						<p className={css.buttonText}>Test Login</p>
-					</Button>
+					</Button> */}
 				</div>
 			</div>
 		</div>
