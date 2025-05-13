@@ -3,13 +3,19 @@ import css from "./Login.module.less";
 import { useState, useEffect } from "react";
 import { StorageService } from "../../utils/storage";
 import Button from "@enact/sandstone/Button";
-import { FaUserCircle } from "react-icons/fa";
+import Input from "@enact/sandstone/Input";
+import Item from "@enact/sandstone/Item";
+import Popup from "@enact/sandstone/Popup";
+import { FaUserCircle, FaBackspace } from "react-icons/fa";
 
 const Login = ({ setPanelIndex, setIsLoggedIn }) => {
 	const [qrCodeUrl, setQrCodeUrl] = useState("");
 	const [loginStatus, setLoginStatus] = useState("waiting");
 	const [selectedMethod, setSelectedMethod] = useState("qr");
 	const [focusedItem, setFocusedItem] = useState("qr");
+	const [reviewerPin, setReviewerPin] = useState("");
+	const [reviewerError, setReviewerError] = useState("");
+	const [showPinPad, setShowPinPad] = useState(false);
 
 	const API_URL = process.env.REACT_APP_API_URL;
 	const TEST_TOKEN = process.env.REACT_APP_TEST_TOKEN;
@@ -40,7 +46,7 @@ const Login = ({ setPanelIndex, setIsLoggedIn }) => {
 			console.log("[TV Login] Auth data saved successfully");
 
 			// Register device and check if successful
-			registerDevice(token).then(success => {
+			registerDevice(token).then((success) => {
 				if (success) {
 					// Set success status and navigate
 					setLoginStatus("success");
@@ -79,7 +85,7 @@ const Login = ({ setPanelIndex, setIsLoggedIn }) => {
 
 			// Check if we already have a device ID stored
 			let deviceId = StorageService.getItem("deviceId");
-			
+
 			// If no device ID stored, generate a new one
 			if (!deviceId) {
 				deviceId = generateUUID();
@@ -110,20 +116,25 @@ const Login = ({ setPanelIndex, setIsLoggedIn }) => {
 
 			if (checkResponse.ok) {
 				const devices = await checkResponse.json();
-				const existingDevice = devices.find(d => d.deviceId === deviceId);
-				
+				const existingDevice = devices.find((d) => d.deviceId === deviceId);
+
 				if (existingDevice) {
-					console.log("[TV Login] Device already registered, updating last used time");
+					console.log(
+						"[TV Login] Device already registered, updating last used time"
+					);
 					// Update the device's last used time
-					const updateResponse = await fetch(`${API_URL}/api/devices/${deviceId}`, {
-						method: "PUT",
-						headers: {
-							"Content-Type": "application/json",
-							Authorization: `Bearer ${token}`,
-						},
-						body: JSON.stringify({ online: true }),
-					});
-					
+					const updateResponse = await fetch(
+						`${API_URL}/api/devices/${deviceId}`,
+						{
+							method: "PUT",
+							headers: {
+								"Content-Type": "application/json",
+								Authorization: `Bearer ${token}`,
+							},
+							body: JSON.stringify({ online: true }),
+						}
+					);
+
 					if (updateResponse.ok) {
 						console.log("[TV Login] Device status updated successfully");
 						return true;
@@ -146,8 +157,15 @@ const Login = ({ setPanelIndex, setIsLoggedIn }) => {
 
 			if (!response.ok) {
 				// Check if the error is due to device limit
-				if (response.status === 400 && responseData.message && responseData.message.includes("Maximum number of devices")) {
-					console.error("[TV Login] Device limit reached:", responseData.message);
+				if (
+					response.status === 400 &&
+					responseData.message &&
+					responseData.message.includes("Maximum number of devices")
+				) {
+					console.error(
+						"[TV Login] Device limit reached:",
+						responseData.message
+					);
 					setLoginStatus("device_limit");
 					return false;
 				}
@@ -190,6 +208,26 @@ const Login = ({ setPanelIndex, setIsLoggedIn }) => {
 			}
 		} catch (error) {
 			console.error("Error during test login:", error);
+		}
+	};
+
+	// Reviewer login function that validates the PIN code
+	const handleReviewerLogin = () => {
+		// Reset any previous error
+		setReviewerError("");
+
+		// Get the reviewer PIN from environment variable
+		const correctPin = process.env.REACT_APP_REVIEWER_PIN || "123456";
+
+		// Validate the PIN
+		if (reviewerPin === correctPin) {
+			console.log("[TV Login] Reviewer access granted");
+
+			// Use the test login function to authenticate
+			handleTestLogin();
+		} else {
+			console.error("[TV Login] Invalid reviewer PIN");
+			setReviewerError("Invalid access code. Please try again.");
 		}
 	};
 
@@ -274,19 +312,25 @@ const Login = ({ setPanelIndex, setIsLoggedIn }) => {
 		} else if (e.keyCode === 13) {
 			// Enter key
 			setSelectedMethod(focusedItem);
+		} else if (e.altKey && e.ctrlKey && e.keyCode === 82) {
+			// Alt+Ctrl+R
+			// Special key combination for reviewer access - directly open PIN popup
+			setShowPinPad(true);
 		}
 	};
 
 	return (
 		<div className={css.login} onKeyDown={handleKeyDown}>
 			<div className={css.siteInfo}>
-				<img
-					src={logo}
-					alt="Leikapui Studios TV"
-					width="400px"
-					height="400px"
-				/>
-				<p>Your Entertainment Hub</p>
+				<div className={css.logoTextContainer}>
+					<img
+						src={logo}
+						alt="Leikapui Studios TV"
+						width="400px"
+						height="400px"
+					/>
+					<p>Your Entertainment Hub</p>
+				</div>
 			</div>
 			<div className={css.loginForm}>
 				<div className={css.loginOptions}>
@@ -312,11 +356,99 @@ const Login = ({ setPanelIndex, setIsLoggedIn }) => {
 						</div>
 					</div>
 
-					{/* Test Login Button
-					<Button className={css.testLoginButton} onClick={handleTestLogin}>
-						<FaUserCircle className={css.buttonIcon} />
-						<p className={css.buttonText}>Test Login</p>
-					</Button> */}
+					{/* Reviewer access button at the bottom */}
+					<div className={css.reviewerAccess}>
+						<Button
+							className={css.reviewerButton}
+							onClick={() => {
+								setShowPinPad(true);
+								setReviewerError("");
+							}}
+							data-spotlight-id="show-reviewer-input"
+						>
+							<FaUserCircle className={css.buttonIcon} />
+							<span className={css.buttonText}>Reviewer Login</span>
+						</Button>
+					</div>
+
+					{/* Use Enact's Popup for proper sizing and positioning */}
+					<Popup
+						open={showPinPad}
+						noAnimation={false}
+						onClose={() => {
+							setShowPinPad(false);
+							setReviewerPin("");
+							setReviewerError("");
+						}}
+						className={css.pinPopup}
+					>
+						<div className={css.pinPopupContent}>
+							<Input
+								type="password"
+								placeholder="Enter Access code"
+								value={reviewerPin}
+								onChange={(e) => setReviewerPin(e.value)}
+								size="small"
+								autoFocus
+								onKeyUp={(e) => {
+									if (e.keyCode === 13) {
+										// Enter key
+										const correctPin =
+											process.env.REACT_APP_REVIEWER_PIN || "123456";
+										if (reviewerPin === correctPin) {
+											handleTestLogin();
+											setShowPinPad(false);
+											setReviewerPin("");
+										} else {
+											setReviewerError("Invalid access code");
+											setReviewerPin("");
+										}
+									} else if (e.keyCode === 27) {
+										// Escape key
+										setShowPinPad(false);
+										setReviewerPin("");
+										setReviewerError("");
+									}
+								}}
+							/>
+
+							<div className={css.pinActions}>
+								<Button
+									size="small"
+									onClick={() => {
+										setShowPinPad(false);
+										setReviewerPin("");
+										setReviewerError("");
+									}}
+								>
+									Cancel
+								</Button>
+								<Button
+									size="small"
+									backgroundOpacity="high"
+									color="green"
+									onClick={() => {
+										const correctPin =
+											process.env.REACT_APP_REVIEWER_PIN || "123456";
+										if (reviewerPin === correctPin) {
+											handleTestLogin();
+											setShowPinPad(false);
+											setReviewerPin("");
+										} else {
+											setReviewerError("Invalid access code");
+											setReviewerPin("");
+										}
+									}}
+								>
+									Submit
+								</Button>
+							</div>
+
+							{reviewerError && (
+								<p className={css.reviewerError}>{reviewerError}</p>
+							)}
+						</div>
+					</Popup>
 				</div>
 			</div>
 		</div>

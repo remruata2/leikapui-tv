@@ -18,28 +18,33 @@
 }
 
 .buttonIcon {
-	color: white !important;
-	font-size: 1.5rem !important;
+	color: inherit !important;
+	font-size: 1.2rem !important;
 	padding-right: 0.5rem;
 	align-items: center;
 	justify-content: center;
 }
 
 .buttonText {
-	font-size: 1.2rem !important;
+	font-size: 1rem !important;
+	color: inherit !important;
 }
 
 .login {
 	display: flex;
 	flex-direction: row;
 	align-items: stretch;
-	justify-content: start;
+	justify-content: center;
 	height: 100vh;
 	width: 100vw;
 	background-color: #1a1a1a;
 	flex-wrap: nowrap;
 	color: white;
 	overflow: hidden;
+
+	@media (max-width: 768px) {
+		flex-direction: column;
+	}
 }
 
 .login h1 {
@@ -57,10 +62,20 @@
 	justify-content: center;
 	align-items: center;
 	width: 35%;
-	height: 100%;
+	height: 100vh;
 	background-color: #1b1b1b;
-	padding: 2rem;
+	padding: 0;
 	text-align: center;
+	position: relative;
+
+	.logoTextContainer {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		margin-top: -5%;
+		height: 100%;
+	}
 
 	h1 {
 		font-size: 2.5rem;
@@ -71,30 +86,92 @@
 	p {
 		font-size: 1.2rem;
 		color: #888;
+		margin-top: 0;
 	}
+
+	img {
+		max-width: 100%;
+		height: auto;
+		object-fit: contain;
+		margin-bottom: 0.75rem; /* Small gap below logo */
+	}
+
+	@media (max-width: 768px) {
+		width: 100%;
+		height: auto;
+		padding: 1.5rem;
+	}
+}
+
+.logoContainer {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	width: 100%;
+	height: 100%;
+	margin-bottom: 0;
 }
 
 .loginForm {
 	display: flex;
 	flex-direction: column;
-	justify-content: center;
+	justify-content: space-between;
 	align-items: center;
 	width: 65%;
 	height: 100%;
 	background-color: #2a2a2a;
 	padding: 2rem;
 	overflow-y: auto;
+
+	@media (max-width: 768px) {
+		width: 100%;
+		height: auto;
+		padding: 1.5rem;
+	}
 }
 
 .loginOptions {
 	display: flex;
 	flex-direction: column;
+	align-items: center;
+	justify-content: center;
 	gap: 1.5rem;
 	width: 100%;
 	max-width: 1200px;
+	padding: 0 1.5rem;
+	position: relative;
+	flex: 1;
+}
+
+.qrWrapper {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	width: 100%;
+	margin: 0 auto;
+}
+
+.qrContainer {
+	display: flex;
+	flex-direction: column;
 	align-items: center;
 	justify-content: center;
-	padding: 1.5rem;
+	gap: 1rem;
+	flex: 1;
+	width: 100%;
+
+	canvas {
+		max-width: 100%;
+		height: auto !important;
+	}
+}
+
+.googleContainer {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	flex: 1;
 }
 
 .option {
@@ -104,15 +181,17 @@
 	padding: 1.5rem !important;
 	transition: all 0.3s ease;
 	width: 100%;
-	min-height: 200px;
 	display: flex;
 	flex-direction: column;
+	align-items: center;
+	justify-content: center;
 
 	h2 {
 		font-size: 1.3rem;
 		margin-bottom: 1.2rem;
 		color: white;
 		text-align: center;
+		width: 100%;
 	}
 
 	&.focused {
@@ -123,22 +202,10 @@
 	&.selected {
 		background-color: #555 !important;
 	}
-}
 
-.qrContainer {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	gap: 1rem;
-	flex: 1;
-}
-
-.googleContainer {
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	flex: 1;
+	@media (max-width: 768px) {
+		padding: 1rem !important;
+	}
 }
 
 .googleButton {
@@ -198,4 +265,162 @@
 
 .button {
 	background-color: bisque;
+}
+
+.reviewerInstructions {
+	color: #aaa;
+	font-size: 1.1rem;
+	text-align: center;
+	margin-bottom: 1.5rem;
+}
+
+.reviewerPinContainer {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 5px;
+	background-color: rgba(30, 30, 30, 0.8);
+	padding: 8px;
+	border-radius: 4px;
+}
+
+.reviewerPinInput {
+	background-color: #333;
+	border: 1px solid #444;
+	border-radius: 4px;
+	color: #aaa;
+	font-size: 0.9rem;
+	padding: 6px 10px;
+	width: 120px;
+	text-align: center;
+	outline: none;
+
+	&:focus {
+		border-color: #4caf50;
+		background-color: #2a2a2a;
+		color: white;
+	}
+}
+
+.reviewerError {
+	color: #ff6b6b;
+	font-size: 0.9rem;
+	margin-top: 0.5rem;
+	text-align: center;
+}
+
+.reviewerAccess {
+	width: 100%;
+	display: flex;
+	justify-content: center;
+	margin-top: 2rem;
+	margin-bottom: 2rem;
+	padding: 0.5rem;
+}
+
+.pinPopup {
+	width: auto !important;
+	background-color: rgba(30, 30, 30, 0.95) !important;
+	border-radius: 8px !important;
+	padding: 0 !important;
+}
+
+.pinPopupContent {
+	padding: 15px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 10px;
+
+	h3 {
+		color: white;
+		margin: 0;
+		padding: 0;
+		font-size: 1.1rem;
+	}
+}
+
+.reviewerPinInput {
+	width: 100% !important;
+	text-align: center !important;
+	font-size: 0.85rem !important;
+	padding: 8px !important;
+	background-color: rgba(20, 20, 20, 0.7) !important;
+	color: white !important;
+	border: 1px solid rgba(255, 255, 255, 0.15) !important;
+	border-radius: 4px !important;
+	transition: all 0.2s ease !important;
+	margin-bottom: 5px !important;
+	box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2) !important;
+	letter-spacing: 0.5px !important;
+
+	&:focus {
+		border-color: #4caf50 !important;
+		background-color: rgba(25, 25, 25, 0.8) !important;
+		box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2) !important;
+	}
+
+	&::placeholder {
+		color: rgba(255, 255, 255, 0.5) !important;
+		letter-spacing: normal !important;
+		font-size: 0.9rem !important;
+	}
+}
+
+.pinActions {
+	display: flex;
+	justify-content: space-between;
+	width: 100%;
+	padding: 0;
+	font-size: 1.1rem;
+	margin-top: 10px;
+	gap: 10px;
+}
+
+.reviewerButton {
+	background-color: rgba(50, 50, 50, 0.7) !important;
+	color: #ccc !important;
+	padding: 10px 20px !important;
+	border-radius: 6px !important;
+	display: flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	border: 1px solid rgba(100, 100, 100, 0.3) !important;
+	transition: all 0.2s ease !important;
+
+	&:focus, &:hover {
+		background-color: rgba(76, 175, 80, 0.5) !important;
+		color: white !important;
+		border-color: #4caf50 !important;
+	}
+}
+
+.smallButtonIcon {
+	font-size: 1rem !important;
+	color: #999 !important;
+}
+
+.smallAccessButton {
+	background-color: #4caf50 !important;
+	color: white !important;
+	padding: 8px 12px !important;
+	font-size: 0.9rem !important;
+	border-radius: 4px !important;
+	margin-left: 5px !important;
+}
+
+.reviewerPinButton {
+	background-color: #333 !important;
+	color: #aaa !important;
+	padding: 8px 12px !important;
+	font-size: 0.9rem !important;
+	border-radius: 4px !important;
+	min-width: 120px !important;
+
+	&:focus {
+		background-color: #4caf50 !important;
+		color: white !important;
+		border: 1px solid #4caf50 !important;
+	}
 }
