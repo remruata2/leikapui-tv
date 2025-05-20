@@ -378,6 +378,37 @@
 	gap: 10px;
 }
 
+.submitButton {
+	background-color: #4caf50 !important;
+	color: white !important;
+	border-radius: 4px !important;
+	transition: all 0.2s ease !important;
+	padding: 8px 16px !important;
+	font-weight: 500 !important;
+	border: none !important;
+
+	&::before {
+		background-color: #4caf50 !important;
+	}
+
+	&:focus {
+		box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.4) !important;
+		background-color: #3d9c40 !important;
+
+		&::before {
+			background-color: #3d9c40 !important;
+		}
+	}
+
+	&:hover {
+		background-color: #3d9c40 !important;
+
+		&::before {
+			background-color: #3d9c40 !important;
+		}
+	}
+}
+
 .reviewerButton {
 	background-color: rgba(50, 50, 50, 0.7) !important;
 	color: #ccc !important;
@@ -389,7 +420,8 @@
 	border: 1px solid rgba(100, 100, 100, 0.3) !important;
 	transition: all 0.2s ease !important;
 
-	&:focus, &:hover {
+	&:focus,
+	&:hover {
 		background-color: rgba(76, 175, 80, 0.5) !important;
 		color: white !important;
 		border-color: #4caf50 !important;
@@ -417,10 +449,4 @@
 	font-size: 0.9rem !important;
 	border-radius: 4px !important;
 	min-width: 120px !important;
-
-	&:focus {
-		background-color: #4caf50 !important;
-		color: white !important;
-		border: 1px solid #4caf50 !important;
-	}
 }

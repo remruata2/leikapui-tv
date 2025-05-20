@@ -233,7 +233,7 @@ const Login = ({ setPanelIndex, setIsLoggedIn }) => {
 				},
 				body: JSON.stringify({
 					email: "tester@leikapui.com",
-					password: process.env.REACT_APP_TESTER_PASSWORD
+					password: process.env.REACT_APP_TESTER_PASSWORD,
 				}),
 			});
 
@@ -448,7 +448,7 @@ const Login = ({ setPanelIndex, setIsLoggedIn }) => {
 								</Button>
 								<Button
 									size="small"
-									backgroundOpacity="high"
+									backgroundOpacity="opaque"
 									color="green"
 									onClick={() => {
 										const correctPin =
@@ -462,6 +462,7 @@ const Login = ({ setPanelIndex, setIsLoggedIn }) => {
 											setReviewerPin("");
 										}
 									}}
+									data-spotlight-id="pin-submit-button"
 								>
 									Submit
 								</Button>
