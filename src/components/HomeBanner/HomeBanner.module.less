@@ -5,7 +5,14 @@
   overflow: hidden;
   scroll-margin-top: 0;
   scroll-snap-align: start;
+}
 
+.bannerSpottable {
+  display: block;
+  width: 100%;
+  height: 100%;
+  outline: none;
+  
   &:focus {
     outline: none;
     &::after {
@@ -18,15 +25,22 @@
       border: 8px solid #ffffff;
       pointer-events: none;
       z-index: 2;
+      box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.5);
     }
   }
 }
 
 .bannerPanels {
   height: 100%;
+  outline: none;
 
   :global(.enact_ui_ViewManager_ViewManager_view) {
     height: 100%;
+    outline: none;
+  }
+  
+  :focus {
+    outline: none;
   }
 }
 

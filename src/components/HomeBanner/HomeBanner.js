@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback, useRef, forwardRef, useImperativeHandle } from "react";
 import Heading from "@enact/sandstone/Heading";
 import Image from "@enact/sandstone/Image";
 import Button from "@enact/sandstone/Button";
@@ -11,7 +11,19 @@ const AUTO_SLIDE_INTERVAL = 5000; // 5 seconds per slide
 
 const SpottableDiv = Spottable("div");
 
-const HomeBanner = ({ setPanelIndex, setSelectedMovieId }) => {
+const HomeBanner = forwardRef(({ setPanelIndex, setSelectedMovieId }, ref) => {
+  const containerRef = useRef(null);
+  
+  // Forward the ref to the container
+  useImperativeHandle(ref, () => ({
+    focus: () => {
+      if (containerRef.current) {
+        containerRef.current.focus();
+        return true;
+      }
+      return false;
+    }
+  }));
   const [bannerData, setBannerData] = useState([]);
   const [error, setError] = useState(null);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -82,10 +94,18 @@ const HomeBanner = ({ setPanelIndex, setSelectedMovieId }) => {
   }
 
   return (
-    <SpottableDiv
+    <div 
+      ref={containerRef}
       className={css.bannerContainer}
-      spotlightId="banner-container"
+      tabIndex="-1"
+      data-spotlight-container-disabled="false"
     >
+      <SpottableDiv
+        className={css.bannerSpottable}
+        spotlightId="banner-container"
+        tabIndex="0"
+        data-spotlight-default="container"
+      >
       <Panels
         index={currentIndex}
         onChange={({ index }) => setCurrentIndex(index)}
@@ -126,8 +146,11 @@ const HomeBanner = ({ setPanelIndex, setSelectedMovieId }) => {
           </Panel>
         ))}
       </Panels>
-    </SpottableDiv>
+      </SpottableDiv>
+    </div>
   );
-};
+});
+
+HomeBanner.displayName = 'HomeBanner';
 
 export default HomeBanner;

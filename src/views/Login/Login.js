@@ -212,22 +212,45 @@ const Login = ({ setPanelIndex, setIsLoggedIn }) => {
 	};
 
 	// Reviewer login function that validates the PIN code
-	const handleReviewerLogin = () => {
+	const handleReviewerLogin = async () => {
 		// Reset any previous error
 		setReviewerError("");
 
-		// Get the reviewer PIN from environment variable
+		// First validate the PIN (security check)
 		const correctPin = process.env.REACT_APP_REVIEWER_PIN || "123456";
-
-		// Validate the PIN
-		if (reviewerPin === correctPin) {
-			console.log("[TV Login] Reviewer access granted");
-
-			// Use the test login function to authenticate
-			handleTestLogin();
-		} else {
+		if (reviewerPin !== correctPin) {
 			console.error("[TV Login] Invalid reviewer PIN");
 			setReviewerError("Invalid access code. Please try again.");
+			return;
+		}
+
+		try {
+			// If PIN is correct, authenticate as tester user
+			const response = await fetch(`${API_URL}/auth/login`, {
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					email: "tester@leikapui.com",
+					password: process.env.REACT_APP_TESTER_PASSWORD
+				}),
+			});
+
+			const data = await response.json();
+
+			if (response.ok) {
+				console.log("[TV Login] Reviewer authenticated as tester user");
+				window.localStorage.setItem("token", data.token);
+				setIsLoggedIn(true);
+				saveAuthData(data.token, data.user);
+			} else {
+				console.error("[TV Login] Failed to authenticate tester user");
+				setReviewerError(data.message || "Authentication failed");
+			}
+		} catch (error) {
+			console.error("[TV Login] Error during reviewer login:", error);
+			setReviewerError("Login service unavailable");
 		}
 	};
 

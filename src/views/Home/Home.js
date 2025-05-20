@@ -5,16 +5,18 @@ import TvShowsCarousel from "../../components/TvShowsCarousel/TvShowsCarousel";
 import Heading from "@enact/sandstone/Heading";
 import Scroller from "@enact/sandstone/Scroller";
 import HomeBanner from "../../components/HomeBanner/HomeBanner";
-import { useEffect, useRef, useCallback, useState } from "react";
+import { useEffect, useRef, useCallback, useState, useLayoutEffect } from "react";
 import Spotlight from "@enact/spotlight";
 import Button from "@enact/sandstone/Button";
 
 const Home = ({ setPanelIndex, setSelectedMovieId, panelIndex }) => {
 	const [contentHeight, setContentHeight] = useState(0);
-	const [isFocused, setIsFocused] = useState(false);
 	const [hasMovies, setHasMovies] = useState(false);
 	const [hasTvShows, setHasTvShows] = useState(false);
 	const contentRef = useRef(null);
+	const bannerRef = useRef(null);
+	const isInitialMount = useRef(true);
+	const scrollerRef = useRef(null);
 
 	// Check if API endpoints have data
 	useEffect(() => {
@@ -43,37 +45,61 @@ const Home = ({ setPanelIndex, setSelectedMovieId, panelIndex }) => {
 			});
 	}, []);
 
+	// Use effect to handle initial focus and spotlight configuration
 	useEffect(() => {
-		// Set 5-way mode and initialize spotlight
+		// Set 5-way mode
 		Spotlight.setPointerMode(false);
 
-		// Wait for next render cycle to ensure components are mounted
-		const timer = setTimeout(() => {
-			// Try to focus the banner container first
-			const bannerElement = document.querySelector(
-				'[spotlightId="banner-container"]'
-			);
-			if (bannerElement) {
-				Spotlight.focus(bannerElement);
-			} else {
-				// If banner container is not available, try to focus any spottable element in the home view
-				const homeContainer = document.querySelector(
-					'[data-component-id="home"]'
-				);
-				if (homeContainer) {
-					Spotlight.focus(homeContainer);
+		// Disable spotlight on scroller
+		if (scrollerRef.current) {
+			scrollerRef.current.setAttribute('data-spotlight-container-disabled', 'true');
+		}
+
+		// Focus banner with multiple attempts
+		const focusBanner = () => {
+			if (bannerRef.current) {
+				const focused = bannerRef.current.focus();
+				if (!focused) {
+					// If focus fails, try again after a short delay
+					setTimeout(() => bannerRef.current?.focus(), 50);
 				}
 			}
+		};
 
-			// Calculate and set content height
-			if (contentRef.current) {
-				const height = contentRef.current.scrollHeight;
-				setContentHeight(height);
-			}
-		}, 100); // Increased timeout to ensure components are mounted
+		// Initial focus sequence
+		if (isInitialMount.current) {
+			isInitialMount.current = false;
+			
+			// First try immediately
+			focusBanner();
+			
+			// Then after a short delay
+			const timer1 = setTimeout(focusBanner, 100);
+			
+			// One more after components are settled
+			const timer2 = setTimeout(focusBanner, 300);
+			
+			// Final attempt after a longer delay
+			const timer3 = setTimeout(focusBanner, 1000);
+			
+			return () => {
+				clearTimeout(timer1);
+				clearTimeout(timer2);
+				clearTimeout(timer3);
+			};
+		} else {
+			// On subsequent renders, just focus once
+			focusBanner();
+		}
+	}, [panelIndex]);
 
-		return () => clearTimeout(timer);
-	}, [panelIndex]); // Add panelIndex as dependency to re-run when returning to home
+	// Handle content height separately
+	useEffect(() => {
+		if (contentRef.current) {
+			const height = contentRef.current.scrollHeight;
+			setContentHeight(height);
+		}
+	}, [hasMovies, hasTvShows]);
 
 	const handleKeyDown = useCallback((e) => {
 		if (e.keyCode === 40) {
@@ -111,14 +137,18 @@ const Home = ({ setPanelIndex, setSelectedMovieId, panelIndex }) => {
 	return (
 		<div data-component-id="home" className={css.homeWrapper}>
 			<Scroller
+				ref={scrollerRef}
 				className={css.homeScroller}
 				direction="vertical"
-				focusableScrollbar
+				focusableScrollbar={false}
 				horizontalScrollThumbAriaLabel="scroll thumb"
 				verticalScrollThumbAriaLabel="scroll thumb"
 				scrollMode="native"
-				verticalScrollbar="visible"
-				fadeOut={false}
+				verticalScrollbar="hidden"
+				fadeOut={true}
+				noScrollByWheel
+				noScrollByDrag
+				data-spotlight-container-disabled="true"
 				style={{
 					"--scroll-content-height": `${contentHeight}px`,
 				}}
@@ -129,6 +159,7 @@ const Home = ({ setPanelIndex, setSelectedMovieId, panelIndex }) => {
 					onKeyDown={handleKeyDown}
 				>
 					<HomeBanner
+						ref={bannerRef}
 						setPanelIndex={setPanelIndex}
 						setSelectedMovieId={setSelectedMovieId}
 					/>
