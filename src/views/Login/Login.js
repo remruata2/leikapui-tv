@@ -284,7 +284,7 @@ const Login = ({ setPanelIndex, setIsLoggedIn }) => {
 						console.log("[TV Login] Polling for authentication...");
 						const pollResponse = await fetch(`${API_URL}/auth/poll`, {
 							method: "POST",
-							body: JSON.stringify({ device_code: data.user_code }),
+							body: JSON.stringify({ device_code: data.device_code }),
 							headers: {
 								"Content-Type": "application/json",
 							},
