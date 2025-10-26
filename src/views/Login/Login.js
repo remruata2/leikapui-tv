@@ -2,23 +2,16 @@ import { QRCodeCanvas } from "qrcode.react";
 import css from "./Login.module.less";
 import { useState, useEffect } from "react";
 import { StorageService } from "../../utils/storage";
-import Button from "@enact/sandstone/Button";
-import Input from "@enact/sandstone/Input";
-import Item from "@enact/sandstone/Item";
-import Popup from "@enact/sandstone/Popup";
-import { FaUserCircle, FaBackspace } from "react-icons/fa";
+
 
 const Login = ({ setPanelIndex, setIsLoggedIn }) => {
 	const [qrCodeUrl, setQrCodeUrl] = useState("");
 	const [loginStatus, setLoginStatus] = useState("waiting");
 	const [selectedMethod, setSelectedMethod] = useState("qr");
 	const [focusedItem, setFocusedItem] = useState("qr");
-	const [reviewerPin, setReviewerPin] = useState("");
-	const [reviewerError, setReviewerError] = useState("");
-	const [showPinPad, setShowPinPad] = useState(false);
+
 
 	const API_URL = process.env.REACT_APP_API_URL;
-	const TEST_TOKEN = process.env.REACT_APP_TEST_TOKEN;
 
 	const logo = require("../../assets/icon-darkbg.png");
 
@@ -184,75 +177,9 @@ const Login = ({ setPanelIndex, setIsLoggedIn }) => {
 		}
 	};
 
-	const handleTestLogin = async () => {
-		try {
-			const response = await fetch(`${API_URL}/auth/test-login`, {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({
-					token: TEST_TOKEN,
-				}),
-			});
-			console.log("API URL:", API_URL);
-			console.log("Token Env:", process.env.REACT_APP_TEST_TOKEN);
-			const data = await response.json();
 
-			if (response.ok) {
-				window.localStorage.setItem("token", data.token);
-				setIsLoggedIn(true);
-				saveAuthData(data.token, data.user);
-			} else {
-				console.error("Test login failed:", data.message);
-			}
-		} catch (error) {
-			console.error("Error during test login:", error);
-		}
-	};
 
-	// Reviewer login function that validates the PIN code
-	const handleReviewerLogin = async () => {
-		// Reset any previous error
-		setReviewerError("");
 
-		// First validate the PIN (security check)
-		const correctPin = process.env.REACT_APP_REVIEWER_PIN || "123456";
-		if (reviewerPin !== correctPin) {
-			console.error("[TV Login] Invalid reviewer PIN");
-			setReviewerError("Invalid access code. Please try again.");
-			return;
-		}
-
-		try {
-			// If PIN is correct, authenticate as tester user
-			const response = await fetch(`${API_URL}/auth/login`, {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({
-					email: "tester@leikapui.com",
-					password: process.env.REACT_APP_TESTER_PASSWORD,
-				}),
-			});
-
-			const data = await response.json();
-
-			if (response.ok) {
-				console.log("[TV Login] Reviewer authenticated as tester user");
-				window.localStorage.setItem("token", data.token);
-				setIsLoggedIn(true);
-				saveAuthData(data.token, data.user);
-			} else {
-				console.error("[TV Login] Failed to authenticate tester user");
-				setReviewerError(data.message || "Authentication failed");
-			}
-		} catch (error) {
-			console.error("[TV Login] Error during reviewer login:", error);
-			setReviewerError("Login service unavailable");
-		}
-	};
 
 	useEffect(() => {
 		let pollInterval;
@@ -328,17 +255,13 @@ const Login = ({ setPanelIndex, setIsLoggedIn }) => {
 		};
 	}, [setPanelIndex, selectedMethod, setIsLoggedIn]);
 
-	const handleKeyDown = (e) => {
+ 	const handleKeyDown = (e) => {
 		if (e.keyCode === 37 || e.keyCode === 39) {
 			// Left/Right arrows
 			setFocusedItem(focusedItem === "qr" ? "google" : "qr");
 		} else if (e.keyCode === 13) {
 			// Enter key
 			setSelectedMethod(focusedItem);
-		} else if (e.altKey && e.ctrlKey && e.keyCode === 82) {
-			// Alt+Ctrl+R
-			// Special key combination for reviewer access - directly open PIN popup
-			setShowPinPad(true);
 		}
 	};
 
@@ -379,100 +302,7 @@ const Login = ({ setPanelIndex, setIsLoggedIn }) => {
 						</div>
 					</div>
 
-					{/* Reviewer access button at the bottom */}
-					<div className={css.reviewerAccess}>
-						<Button
-							className={css.reviewerButton}
-							onClick={() => {
-								setShowPinPad(true);
-								setReviewerError("");
-							}}
-							data-spotlight-id="show-reviewer-input"
-						>
-							<FaUserCircle className={css.buttonIcon} />
-							<span className={css.buttonText}>Reviewer Login</span>
-						</Button>
-					</div>
 
-					{/* Use Enact's Popup for proper sizing and positioning */}
-					<Popup
-						open={showPinPad}
-						noAnimation={false}
-						onClose={() => {
-							setShowPinPad(false);
-							setReviewerPin("");
-							setReviewerError("");
-						}}
-						className={css.pinPopup}
-					>
-						<div className={css.pinPopupContent}>
-							<Input
-								type="password"
-								placeholder="Enter Access code"
-								value={reviewerPin}
-								onChange={(e) => setReviewerPin(e.value)}
-								size="small"
-								autoFocus
-								onKeyUp={(e) => {
-									if (e.keyCode === 13) {
-										// Enter key
-										const correctPin =
-											process.env.REACT_APP_REVIEWER_PIN || "123456";
-										if (reviewerPin === correctPin) {
-											handleTestLogin();
-											setShowPinPad(false);
-											setReviewerPin("");
-										} else {
-											setReviewerError("Invalid access code");
-											setReviewerPin("");
-										}
-									} else if (e.keyCode === 27) {
-										// Escape key
-										setShowPinPad(false);
-										setReviewerPin("");
-										setReviewerError("");
-									}
-								}}
-							/>
-
-							<div className={css.pinActions}>
-								<Button
-									size="small"
-									onClick={() => {
-										setShowPinPad(false);
-										setReviewerPin("");
-										setReviewerError("");
-									}}
-								>
-									Cancel
-								</Button>
-								<Button
-									size="small"
-									backgroundOpacity="opaque"
-									color="green"
-									onClick={() => {
-										const correctPin =
-											process.env.REACT_APP_REVIEWER_PIN || "123456";
-										if (reviewerPin === correctPin) {
-											handleTestLogin();
-											setShowPinPad(false);
-											setReviewerPin("");
-										} else {
-											setReviewerError("Invalid access code");
-											setReviewerPin("");
-										}
-									}}
-									data-spotlight-id="pin-submit-button"
-								>
-									Submit
-								</Button>
-							</div>
-
-							{reviewerError && (
-								<p className={css.reviewerError}>{reviewerError}</p>
-							)}
-						</div>
-					</Popup>
 				</div>
 			</div>
 		</div>
