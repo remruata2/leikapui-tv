@@ -1,0 +1,32 @@
+# Comprehensive TV Browser Support for Leikapui TV App
+
+# Modern desktop browsers (for development and testing)
+last 2 versions
+> 1%
+not dead
+
+# TV Platforms (Android TV, Google TV, Fire TV, etc.)
+Android >= 5        # Android 5+ (Lollipop) - covers Android TV, Fire TV
+Android >= 7        # Android TV specific versions
+Android >= 9        # Android Pie and newer
+
+# Apple TV (tvOS Safari)
+iOS >= 10           # tvOS 10+ (Apple TV 4th gen)
+iOS >= 12           # tvOS 12+ (Apple TV 4K)
+iOS >= 14           # tvOS 14+ (Apple TV 4K 2nd gen)
+
+# Samsung and LG TVs (Chromium-based web engines)
+Chrome >= 53        # Chromium 53+ (covers most Samsung Tizen 4+)
+Chrome >= 70        # Chromium 70+ (covers LG webOS 5+)
+Chrome >= 79        # Chromium 79+ (covers Samsung Tizen 6+)
+
+# Generic web platform support
+Firefox >= 68       # Firefox-based TVs
+Safari >= 12        # Safari-based TVs
+Edge >= 79          # Chromium-based Edge
+
+# Development browsers
+Chrome >= 90
+Firefox >= 88
+Safari >= 14
+Edge >= 90

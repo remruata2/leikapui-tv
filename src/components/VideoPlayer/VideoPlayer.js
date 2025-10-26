@@ -18,7 +18,7 @@ const VideoPlayerComponent = ({ source, onClose }) => {
 
 	return (
 		<VideoPlayer
-			autoCloseTimeout={0}
+			autoCloseTimeout={3000}
 			autoPlay
 			controls
 			feedbackHideDelay={3000}
