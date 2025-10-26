@@ -5,9 +5,8 @@ import TvShowsCarousel from "../../components/TvShowsCarousel/TvShowsCarousel";
 import Heading from "@enact/sandstone/Heading";
 import Scroller from "@enact/sandstone/Scroller";
 import HomeBanner from "../../components/HomeBanner/HomeBanner";
-import { useEffect, useRef, useCallback, useState, useLayoutEffect } from "react";
+import { useEffect, useRef, useCallback, useState } from "react";
 import Spotlight from "@enact/spotlight";
-import Button from "@enact/sandstone/Button";
 
 const Home = ({ setPanelIndex, setSelectedMovieId, panelIndex }) => {
 	const [contentHeight, setContentHeight] = useState(0);
@@ -69,19 +68,19 @@ const Home = ({ setPanelIndex, setSelectedMovieId, panelIndex }) => {
 		// Initial focus sequence
 		if (isInitialMount.current) {
 			isInitialMount.current = false;
-			
+
 			// First try immediately
 			focusBanner();
-			
+
 			// Then after a short delay
 			const timer1 = setTimeout(focusBanner, 100);
-			
+
 			// One more after components are settled
 			const timer2 = setTimeout(focusBanner, 300);
-			
+
 			// Final attempt after a longer delay
 			const timer3 = setTimeout(focusBanner, 1000);
-			
+
 			return () => {
 				clearTimeout(timer1);
 				clearTimeout(timer2);
@@ -145,7 +144,7 @@ const Home = ({ setPanelIndex, setSelectedMovieId, panelIndex }) => {
 				verticalScrollThumbAriaLabel="scroll thumb"
 				scrollMode="native"
 				verticalScrollbar="hidden"
-				fadeOut={true}
+				fadeOut
 				noScrollByWheel
 				noScrollByDrag
 				data-spotlight-container-disabled="true"

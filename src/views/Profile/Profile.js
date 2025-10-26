@@ -9,10 +9,11 @@ import css from "./Profile.module.less";
 import { FaUser, FaEnvelope, FaPhone, FaCalendarAlt } from "react-icons/fa";
 import deviceInfo from "@enact/webos/deviceinfo";
 
-const Profile = ({ isLoggedIn, setPanelIndex }) => {
+const Profile = ({ isLoggedIn }) => {
 	const [profile, setProfile] = useState(null);
-	const [editMode, setEditMode] = useState(false);
 	const [editedProfile, setEditedProfile] = useState({});
+
+
 	const [showSuccessPopup, setShowSuccessPopup] = useState(false);
 	const [showErrorPopup, setShowErrorPopup] = useState(false);
 	const [errorMessage, setErrorMessage] = useState("");
@@ -197,63 +198,6 @@ const Profile = ({ isLoggedIn, setPanelIndex }) => {
 
 		loadProfileData();
 	}, [isLoggedIn]);
-
-	const validateProfileData = (data) => {
-		if (data.phone && !/^\d{10}$/.test(data.phone)) {
-			setErrorMessage("Phone number must be 10 digits");
-			setShowErrorPopup(true);
-			return false;
-		}
-		return true;
-	};
-
-	const handleSave = async () => {
-		if (!validateProfileData(editedProfile)) return;
-
-		try {
-			const deviceCode = StorageService.getItem("deviceCode");
-			if (!deviceCode) {
-				setErrorMessage("Authentication required");
-				setShowErrorPopup(true);
-				return;
-			}
-
-			const response = await fetch(
-				`${process.env.REACT_APP_API_URL}/api/users/tvProfile`,
-				{
-					method: "PUT",
-					headers: {
-						"Content-Type": "application/json",
-					},
-					body: JSON.stringify({
-						deviceCode,
-						updates: editedProfile,
-					}),
-					credentials: "include",
-				}
-			);
-
-			if (!response.ok) {
-				throw new Error("Failed to update profile");
-			}
-
-			const updatedProfile = await response.json();
-			setProfile(updatedProfile);
-			setEditMode(false);
-			setShowSuccessPopup(true);
-		} catch (error) {
-			console.error("Error updating profile:", error);
-			setErrorMessage("Failed to update profile");
-			setShowErrorPopup(true);
-		}
-	};
-
-	const handleInputChange = (name, value) => {
-		setEditedProfile((prev) => ({
-			...prev,
-			[name]: value,
-		}));
-	};
 
 	if (!profile) {
 		return (

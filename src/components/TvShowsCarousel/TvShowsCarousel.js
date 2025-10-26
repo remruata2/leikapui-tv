@@ -26,8 +26,8 @@ const TvShowsCarousel = ({ setPanelIndex, setSelectedMovieId }) => {
   };
 
   return (
-    <Scroller 
-      direction="horizontal" 
+    <Scroller
+      direction="horizontal"
       focusableScrollbar
       spotlightDisabled={false}
     >

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Panels, Panel } from "@enact/sandstone/Panels";
 import ThemeDecorator from "@enact/sandstone/ThemeDecorator";
 import { Row } from "@enact/ui/Layout";
@@ -27,9 +27,9 @@ const AppBase = ({ open, onToggleSidebar, ...rest }) => {
 	const [isLoggedIn, setIsLoggedIn] = useState(false);
 	const [showLogoutPopup, setShowLogoutPopup] = useState(false);
 	const [navigationStack, setNavigationStack] = useState([0]);
-	
+
 	// Create a custom panel index setter that also updates navigation history
-	const setPanel = (index) => {
+	const setPanel = useCallback((index) => {
 		// Don't add duplicate consecutive entries
 		if (index !== panelIndex) {
 			console.log(`Navigation: ${panelIndex} -> ${index}`);
@@ -44,7 +44,52 @@ const AppBase = ({ open, onToggleSidebar, ...rest }) => {
 				return prev;
 			});
 		}
-	};
+	}, [panelIndex]);
+
+	// Improved back navigation handler
+	const handleBackNavigation = useCallback(() => {
+		// Only proceed if we have somewhere to go back to
+		if (navigationStack.length <= 1) {
+			console.log("No previous page in navigation stack");
+			return;
+		}
+
+		setNavigationStack((prev) => {
+			// Remove current page from stack
+			const newStack = prev.slice(0, -1);
+			// Get previous page
+			const previousPanel = newStack[newStack.length - 1] || 0;
+			console.log(`Going back to panel ${previousPanel} from ${panelIndex}`);
+
+			// Update panel index directly (no need to add to stack)
+			setPanelIndex(previousPanel);
+
+			// Force focus reset when navigating back
+			setTimeout(() => {
+				// Updated focus map to match panel structure
+				const focusMap = {
+					0: '[data-spotlight-id="home-main"]',
+					1: '[data-spotlight-id="movie-detail"]',
+					2: '[data-spotlight-id="tvshow-detail"]',
+					3: '[data-spotlight-id="movies-grid"]',
+					4: '[data-spotlight-id="tvshows-grid"]',
+					5: '[data-spotlight-id="profile-container"]',
+				};
+				const selector = focusMap[previousPanel];
+				if (selector) {
+					const element = document.querySelector(selector);
+					if (element) {
+						console.log(`Setting focus to ${selector}`);
+						Spotlight.focus(element);
+					} else {
+						console.log(`Element not found for selector ${selector}`);
+					}
+				}
+			}, 50);
+
+			return newStack;
+		});
+	}, [navigationStack.length, panelIndex]);
 
 	// Check if user is already logged in
 	useEffect(() => {
@@ -76,13 +121,13 @@ const AppBase = ({ open, onToggleSidebar, ...rest }) => {
 				}
 			}
 		};
-		
+
 		// Add event listener
 		window.addEventListener('keydown', handleKeyboardBack);
-		
+
 		// Clean up
 		return () => window.removeEventListener('keydown', handleKeyboardBack);
-	}, [panelIndex, navigationStack]);
+	}, [panelIndex, navigationStack, handleBackNavigation, setPanel]);
 
 	// --- Focus Management for Panel Switching ---
 	useEffect(() => {
@@ -109,37 +154,64 @@ const AppBase = ({ open, onToggleSidebar, ...rest }) => {
 		}
 	}, [panelIndex, sideBarDisplay]);
 
+	const silentLogout = async () => {
+		try {
+			await StorageService.removeItem("authData");
+			window.localStorage.removeItem("token");
+			setIsLoggedIn(false);
+		} catch (error) {
+			console.error("Error in silent logout:", error);
+		}
+	};
+
 	useEffect(() => {
 		const checkAuthentication = async () => {
 			const token = window.localStorage.getItem("token");
 			const authData = StorageService.getItem("authData");
 
 			if (token || authData?.token) {
-				setIsLoggedIn(true);
-			} else {
+				// Check if token is still valid by calling API
 				try {
 					const response = await fetch(
 						`${process.env.REACT_APP_API_URL}/auth/isAuthenticated`,
 						{
 							credentials: "include",
+							headers: {
+								Authorization: `Bearer ${authData?.token || token}`,
+							},
 						}
 					);
 					const data = await response.json();
-					setIsLoggedIn(data.isAuthenticated);
-
-					// Optionally save token if server provides it
-					if (data.isAuthenticated && data.token) {
-						window.localStorage.setItem("token", data.token);
-						StorageService.setItem("authData", { token: data.token });
+					if (data.isAuthenticated) {
+						setIsLoggedIn(true);
+					} else {
+						await silentLogout();
 					}
 				} catch (error) {
 					console.error("Error checking authentication:", error);
-					setIsLoggedIn(false);
+					await silentLogout();
 				}
+			} else {
+				// No local auth data, logout silently
+				await silentLogout();
 			}
 		};
 
 		checkAuthentication();
+	}, [panelIndex]);
+
+	// Check authentication on window focus
+	useEffect(() => {
+		const handleFocus = () => {
+			const token = window.localStorage.getItem("token");
+			const authData = StorageService.getItem("authData");
+			if (!token && !authData?.token) {
+				silentLogout();
+			}
+		};
+
+		window.addEventListener("focus", handleFocus);
+		return () => window.removeEventListener("focus", handleFocus);
 	}, []);
 
 	useEffect(() => {
@@ -149,7 +221,7 @@ const AppBase = ({ open, onToggleSidebar, ...rest }) => {
 				// WebOS back button keycode
 				e.preventDefault();
 				console.log("Back button pressed - Current panel index:", panelIndex);
-				
+
 				// Always use the navigation stack for back navigation
 				if (navigationStack.length > 1) {
 					handleBackNavigation();
@@ -162,10 +234,10 @@ const AppBase = ({ open, onToggleSidebar, ...rest }) => {
 				}
 			}
 		};
-		
+
 		window.addEventListener("keydown", handleKeyDown);
 		return () => window.removeEventListener("keydown", handleKeyDown);
-	}, [panelIndex]);
+	}, [panelIndex, navigationStack.length, handleBackNavigation, setPanel]);
 
 	const onLogout = async () => {
 		try {
@@ -178,59 +250,14 @@ const AppBase = ({ open, onToggleSidebar, ...rest }) => {
 		}
 	};
 
-	// Improved back navigation handler
-	const handleBackNavigation = () => {
-		// Only proceed if we have somewhere to go back to
-		if (navigationStack.length <= 1) {
-			console.log("No previous page in navigation stack");
-			return;
-		}
-		
-		setNavigationStack((prev) => {
-			// Remove current page from stack
-			const newStack = prev.slice(0, -1);
-			// Get previous page
-			const previousPanel = newStack[newStack.length - 1] || 0;
-			console.log(`Going back to panel ${previousPanel} from ${panelIndex}`);
-			
-			// Update panel index directly (no need to add to stack)
-			setPanelIndex(previousPanel);
-			
-			// Force focus reset when navigating back
-			setTimeout(() => {
-				// Updated focus map to match panel structure
-				const focusMap = {
-					0: '[data-spotlight-id="home-main"]',
-					1: '[data-spotlight-id="movie-detail"]',
-					2: '[data-spotlight-id="tvshow-detail"]',
-					3: '[data-spotlight-id="movies-grid"]',
-					4: '[data-spotlight-id="tvshows-grid"]',
-					5: '[data-spotlight-id="profile-container"]',
-				};
-				const selector = focusMap[previousPanel];
-				if (selector) {
-					const element = document.querySelector(selector);
-					if (element) {
-						console.log(`Setting focus to ${selector}`);
-						Spotlight.focus(element);
-					} else {
-						console.log(`Element not found for selector ${selector}`);
-					}
-				}
-			}, 50);
-			
-			return newStack;
-		});
-	};
-
-	const handlePanelsKeyDown = (ev) => {
+	const handlePanelsKeyDown = useCallback((ev) => {
 		// Handle WebOS back button press
 		const keycode = ev.keyCode || ev.which;
 		if (keycode === 461) {
 			// Process back button logic directly
 			ev.preventDefault();
 			console.log("Back button pressed - Current panel index:", panelIndex);
-			
+
 			// Always use the navigation stack for back navigation
 			if (navigationStack.length > 1) {
 				handleBackNavigation();
@@ -245,10 +272,15 @@ const AppBase = ({ open, onToggleSidebar, ...rest }) => {
 			// Handle sidebar toggle
 			onToggleSidebar(ev, { onToggleSidebar, open });
 		}
-	};
+	}, [panelIndex, navigationStack.length, handleBackNavigation, setPanel, onToggleSidebar, open]);
 
 	const handlePopupClose = () => {
 		setShowLogoutPopup(false);
+	};
+
+	const handleLogout = () => {
+		window.localStorage.removeItem("token");
+		setIsLoggedIn(false);
 	};
 
 	const handleTransition = (e) => {
@@ -257,11 +289,11 @@ const AppBase = ({ open, onToggleSidebar, ...rest }) => {
 		// Navigation is now handled by setPanel
 	};
 
-	const handleMovieSelect = (movieId) => {
+	const handleMovieSelect = useCallback((movieId) => {
 		console.log(`Selected movie: ${movieId}`);
 		setSelectedMovieId(movieId);
 		setPanel(1); // Navigate to MovieDetail panel
-	};
+	}, [setPanel]);
 
 	// Video player visibility control
 	const setVideoPlayerActive = (isActive) => {
@@ -318,9 +350,8 @@ const AppBase = ({ open, onToggleSidebar, ...rest }) => {
 				<Panel>
 					{isLoggedIn ? (
 						<>
-							<Profile 
+							<Profile
 								isLoggedIn={isLoggedIn}
-								setPanelIndex={setPanel}
 							/>
 							<Device />
 							{/* Add future protected panels here */}
@@ -352,10 +383,7 @@ const AppBase = ({ open, onToggleSidebar, ...rest }) => {
 					onLogout={onLogout}
 					sideBarDisplay={sideBarDisplay}
 					setSideBarDisplay={setSideBarDisplay}
-					handleLogout={() => {
-						window.localStorage.removeItem("token");
-						setIsLoggedIn(false);
-					}}
+					handleLogout={handleLogout}
 					style={{ zIndex: 20 }}
 				/>
 			)}

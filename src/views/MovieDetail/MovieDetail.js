@@ -1,17 +1,14 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Button from "@enact/sandstone/Button";
 import SpotlightContainerDecorator from "@enact/spotlight/SpotlightContainerDecorator";
 import { Popup } from "@enact/sandstone/Popup";
-import { Header } from "@enact/sandstone/Panels";
 import {
 	FaUserCircle,
 	FaShoppingCart,
 	FaClock,
-	FaExclamationCircle,
 } from "react-icons/fa";
 import { MdPlayCircleFilled, MdLocalMovies } from "react-icons/md";
 import { StorageService } from "../../utils/storage";
-import VideoJSPlayer from "../../components/VideoJSPlayer/VideoJSPlayer";
 import VideoPlayerComponent from "../../components/VideoPlayer/VideoPlayer";
 import Spotlight from "@enact/spotlight";
 import css from "./MovieDetail.module.less";
@@ -58,8 +55,9 @@ const MovieDetailBase = ({
 			.catch((error) => console.error("Error:", error));
 	}, [selectedMovieId]);
 
-	console.log("User Data:", user);
-	console.log("Movie Data:", movie);
+	// Debug logging
+	// console.log("User Data:", user);
+	// console.log("Movie Data:", movie);
 
 	useEffect(() => {
 		if (user?.user && movie?._id) {
@@ -84,7 +82,7 @@ const MovieDetailBase = ({
 	}, [user, movie]);
 
 	const handleLoginClick = () => {
-		setPanelIndex && setPanelIndex(5);
+		if (setPanelIndex) setPanelIndex(5);
 	};
 
 	const handleRentClick = () => {
@@ -128,36 +126,12 @@ const MovieDetailBase = ({
 	};
 
 	// Use trailer_url directly as YouTube video ID or URL
-	const youtubeId = movie?.trailer_url;
+
 	const videoUrl = movie?.movie_url?.hlsUrl;
 
 	console.log("Video URL:", videoUrl);
 
-	// Video.js YouTube player options
-	const videoJsOptions = youtubeId
-		? {
-				autoplay: false,
-				controls: true,
-				responsive: true,
-				fluid: true,
-				techOrder: ["youtube"],
-				sources: [
-					{
-						type: "video/youtube",
-						src: `https://www.youtube.com/watch?v=${youtubeId}`,
-					},
-				],
-				youtube: {
-					iv_load_policy: 1,
-					modestbranding: 1,
-					rel: 0,
-					showinfo: 0,
-					playsinline: 1,
-					enablejsapi: 1,
-					origin: window.location.origin,
-				},
-		  }
-		: null;
+
 
 	const renderActionButton = () => {
 		if (!user) {
@@ -268,8 +242,8 @@ const MovieDetailBase = ({
 						background: "#000",
 					}}
 				>
-					<VideoPlayerComponent 
-						source={movie.movie_url.hlsUrl} 
+					<VideoPlayerComponent
+						source={movie.movie_url.hlsUrl}
 						onClose={handleClosePlayer}
 					/>
 				</div>

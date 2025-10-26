@@ -50,9 +50,9 @@ const TvShowBase = ({ selectedMovieId, setSidebarDisplay, setPanelIndex }) => {
 					setSelectedSeason(data.data.seasons[0].season_no);
 				}
 			})
-			.catch((error) => {
-				console.error("Error:", error);
-				setError(error.message);
+			.catch((err) => {
+				console.error("Error:", err);
+				setError(err.message);
 			})
 			.finally(() => {
 				setIsLoading(false);
@@ -144,8 +144,8 @@ const TvShowBase = ({ selectedMovieId, setSidebarDisplay, setPanelIndex }) => {
 
 							{tvShow.genres && (
 								<div className={css.genresSection}>
-									{tvShow.genres.split(",").map((genre, index) => (
-										<div key={index} className={css.genreTag}>
+									{tvShow.genres.split(",").map((genre, genreIndex) => (
+										<div key={genreIndex} className={css.genreTag}>
 											{genre.trim()}
 										</div>
 									))}

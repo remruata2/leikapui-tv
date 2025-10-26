@@ -3,10 +3,9 @@ import css from "./Sidebar.module.less";
 import {
 	RiHome5Fill,
 	RiMovie2Fill,
-	RiTvFill,
 	RiUser3Fill,
 } from "react-icons/ri";
-import { BiDevices, BiLogOut, BiLogIn } from "react-icons/bi";
+import { BiLogOut, BiLogIn } from "react-icons/bi";
 import Item from "@enact/sandstone/Item";
 import SpotlightContainerDecorator from "@enact/spotlight/SpotlightContainerDecorator";
 import { Spotlight } from "@enact/spotlight";
@@ -137,7 +136,7 @@ const Sidebar = ({
 				e.stopPropagation();
 			}
 		},
-		[focusedIndex, lastIndex]
+		[focusedIndex, lastIndex, handleItemClick]
 	);
 
 	if (!sideBarDisplay) return null;

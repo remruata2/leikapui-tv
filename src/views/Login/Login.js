@@ -1,7 +1,8 @@
 import { QRCodeCanvas } from "qrcode.react";
 import css from "./Login.module.less";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { StorageService } from "../../utils/storage";
+import { Popup } from "@enact/sandstone/Popup";
 
 
 const Login = ({ setPanelIndex, setIsLoggedIn }) => {
@@ -9,6 +10,7 @@ const Login = ({ setPanelIndex, setIsLoggedIn }) => {
 	const [loginStatus, setLoginStatus] = useState("waiting");
 	const [selectedMethod, setSelectedMethod] = useState("qr");
 	const [focusedItem, setFocusedItem] = useState("qr");
+	const [showSuccessPopup, setShowSuccessPopup] = useState(false);
 
 
 	const API_URL = process.env.REACT_APP_API_URL;
@@ -32,37 +34,7 @@ const Login = ({ setPanelIndex, setIsLoggedIn }) => {
 		}
 	};
 
-	const saveAuthData = (token, user) => {
-		try {
-			// Store in localStorage
-			StorageService.setItem("authData", { token, user });
-			console.log("[TV Login] Auth data saved successfully");
-
-			// Register device and check if successful
-			registerDevice(token).then((success) => {
-				if (success) {
-					// Set success status and navigate
-					setLoginStatus("success");
-					console.log("[TV Login] Redirecting to home panel");
-					setPanelIndex(0);
-				} else if (loginStatus !== "device_limit") {
-					// Only set error if it's not already set to device_limit
-					setLoginStatus("error");
-					// Don't redirect if we hit device limit
-					if (loginStatus !== "device_limit") {
-						setPanelIndex(0);
-					}
-				}
-			});
-		} catch (error) {
-			console.error("[TV Login] Failed to save auth data:", error);
-			setLoginStatus("error");
-			// Still redirect even if storage fails
-			setPanelIndex(0);
-		}
-	};
-
-	const registerDevice = async (token) => {
+	const registerDevice = useCallback(async (token) => {
 		try {
 			// Generate a UUID using a simple function since crypto might not be available
 			const generateUUID = () => {
@@ -175,11 +147,38 @@ const Login = ({ setPanelIndex, setIsLoggedIn }) => {
 			// Return false to indicate failure
 			return false;
 		}
-	};
+	}, [setLoginStatus, API_URL]);
 
+	const saveAuthData = useCallback((token, user) => {
+		try {
+			// Store in localStorage
+			StorageService.setItem("authData", { token, user });
+			console.log("[TV Login] Auth data saved successfully");
 
-
-
+			// Register device and check if successful
+			registerDevice(token).then((success) => {
+				if (success) {
+					// Set success status and navigate
+					setLoginStatus("success");
+					console.log("[TV Login] Redirecting to home panel");
+					setTimeout(() => setPanelIndex(0), 500); // Short delay after popup
+				} else if (loginStatus !== "device_limit") {
+					// Only set error if it's not already set to device_limit
+					setLoginStatus("error");
+					// Don't redirect if we hit device limit
+					if (loginStatus !== "device_limit") {
+						setPanelIndex(0);
+					}
+				}
+			});
+		} catch (error) {
+			console.error("[TV Login] Failed to save auth data:", error);
+			setLoginStatus("error");
+			// Still redirect even if storage fails
+			setPanelIndex(0);
+		}
+	// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [registerDevice, setLoginStatus, setPanelIndex]);
 
 	useEffect(() => {
 		let pollInterval;
@@ -228,7 +227,10 @@ const Login = ({ setPanelIndex, setIsLoggedIn }) => {
 							console.log("[TV Login] Authentication successful");
 							clearInterval(pollInterval);
 							setIsLoggedIn(true);
-							saveAuthData(pollData.token, pollData.user);
+							setShowSuccessPopup(true);
+							setTimeout(() => {
+								saveAuthData(pollData.token, pollData.user);
+							}, 2000);
 						}
 					} catch (error) {
 						console.error("[TV Login] Error during polling:", error);
@@ -253,9 +255,9 @@ const Login = ({ setPanelIndex, setIsLoggedIn }) => {
 				clearInterval(pollInterval);
 			}
 		};
-	}, [setPanelIndex, selectedMethod, setIsLoggedIn]);
+	}, [API_URL, saveAuthData, setPanelIndex, selectedMethod, setIsLoggedIn]);
 
- 	const handleKeyDown = (e) => {
+	const handleKeyDown = useCallback((e) => {
 		if (e.keyCode === 37 || e.keyCode === 39) {
 			// Left/Right arrows
 			setFocusedItem(focusedItem === "qr" ? "google" : "qr");
@@ -263,7 +265,7 @@ const Login = ({ setPanelIndex, setIsLoggedIn }) => {
 			// Enter key
 			setSelectedMethod(focusedItem);
 		}
-	};
+	}, [focusedItem, setFocusedItem, setSelectedMethod]);
 
 	return (
 		<div className={css.login} onKeyDown={handleKeyDown}>
@@ -288,7 +290,7 @@ const Login = ({ setPanelIndex, setIsLoggedIn }) => {
 									value={qrCodeUrl}
 									size={180}
 									level="H"
-									includeMargin={true}
+									includeMargin
 									style={{
 										padding: "0.8rem",
 										background: "white",
@@ -305,6 +307,17 @@ const Login = ({ setPanelIndex, setIsLoggedIn }) => {
 
 				</div>
 			</div>
+			{/* Success Popup */}
+			<Popup
+				open={showSuccessPopup}
+				closeButton={false}
+				spotlightRestrict="self-only"
+				style={{ padding: "2rem" }}
+			>
+				<div className={css.successPopupContent}>
+					<span>Login Successful! Redirecting to home...</span>
+				</div>
+			</Popup>
 		</div>
 	);
 };

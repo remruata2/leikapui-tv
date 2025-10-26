@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from "react";
+import { useRef, useEffect } from "react";
 import videojs from "video.js";
 import "videojs-youtube";
 import styles from "./VideoJSPlayer.module.css";

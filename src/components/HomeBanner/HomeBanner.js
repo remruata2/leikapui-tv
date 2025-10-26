@@ -13,7 +13,7 @@ const SpottableDiv = Spottable("div");
 
 const HomeBanner = forwardRef(({ setPanelIndex, setSelectedMovieId }, ref) => {
   const containerRef = useRef(null);
-  
+
   // Forward the ref to the container
   useImperativeHandle(ref, () => ({
     focus: () => {
@@ -94,7 +94,7 @@ const HomeBanner = forwardRef(({ setPanelIndex, setSelectedMovieId }, ref) => {
   }
 
   return (
-    <div 
+    <div
       ref={containerRef}
       className={css.bannerContainer}
       tabIndex="-1"

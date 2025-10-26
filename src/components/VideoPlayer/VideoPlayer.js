@@ -1,5 +1,4 @@
 // src/components/VideoPlayer/VideoPlayer.js
-import React from "react";
 import { Video, VideoPlayer } from "@enact/sandstone/VideoPlayer";
 
 const VideoPlayerComponent = ({ source, onClose }) => {
