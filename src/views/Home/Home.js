@@ -17,32 +17,32 @@ const Home = ({ setPanelIndex, setSelectedMovieId, panelIndex }) => {
 	const isInitialMount = useRef(true);
 	const scrollerRef = useRef(null);
 
-	// Check if API endpoints have data
-	useEffect(() => {
-		// Check for movies
-		fetch(`${process.env.REACT_APP_API_URL}/api/movies`)
-			.then((response) => response.json())
-			.then((data) => {
-				if (data && data.data && data.data.length > 0) {
-					setHasMovies(true);
-				}
-			})
-			.catch((error) => {
-				console.error("Error checking movies:", error);
-			});
+ 	// Check if API endpoints have data
+ 	useEffect(() => {
+ 		// Check for movies
+ 		fetch(`${process.env.REACT_APP_API_URL}/api/movies`)
+ 			.then((response) => response.json())
+ 			.then((data) => {
+ 				if (data && data.data && data.data.length > 0) {
+ 					setHasMovies(true);
+ 				}
+ 			})
+ 			.catch((error) => {
+ 				console.error("Error checking movies:", error);
+ 			});
 
-		// Check for TV shows
-		fetch(`${process.env.REACT_APP_API_URL}/api/tvShows`)
-			.then((response) => response.json())
-			.then((data) => {
-				if (data && data.length > 0) {
-					setHasTvShows(true);
-				}
-			})
-			.catch((error) => {
-				console.error("Error checking TV shows:", error);
-			});
-	}, []);
+ 		// Check for TV shows
+ 		fetch(`${process.env.REACT_APP_API_URL}/api/tvShows`)
+ 			.then((response) => response.json())
+ 			.then((data) => {
+ 				if (data && data.length > 0) {
+ 					setHasTvShows(true);
+ 				}
+ 			})
+ 			.catch((error) => {
+ 				console.error("Error checking TV shows:", error);
+ 			});
+ 	}, []);
 
 	// Use effect to handle initial focus and spotlight configuration
 	useEffect(() => {

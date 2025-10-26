@@ -21,30 +21,54 @@ import { Spotlight } from "@enact/spotlight";
 
 const AppBase = ({ open, onToggleSidebar, ...rest }) => {
 	const [panelIndex, setPanelIndex] = useState(0);
-	const [selectedMovieId, setSelectedMovieId] = useState(null);
+  const [selectedMovieId, setSelectedMovieIdState] = useState(() => {
+    return window.localStorage.getItem('selectedMovieId') || null;
+  });
+
+  const setSelectedMovieId = useCallback((id) => {
+    setSelectedMovieIdState(id);
+    if (id) {
+      window.localStorage.setItem('selectedMovieId', id);
+    } else {
+      window.localStorage.removeItem('selectedMovieId');
+    }
+  }, []);
 	const [isVideoPlayerActive, setIsVideoPlayerActive] = useState(false); // Track video player state
 	const [sideBarDisplay, setSideBarDisplay] = useState(true);
 	const [isLoggedIn, setIsLoggedIn] = useState(false);
-	const [showLogoutPopup, setShowLogoutPopup] = useState(false);
-	const [navigationStack, setNavigationStack] = useState([0]);
+  const [showLogoutPopup, setShowLogoutPopup] = useState(false);
+  const [showLoginSuccessPopup, setShowLoginSuccessPopup] = useState(false);
+  const [navigationStack, setNavigationStack] = useState([0]);
 
-	// Create a custom panel index setter that also updates navigation history
-	const setPanel = useCallback((index) => {
-		// Don't add duplicate consecutive entries
-		if (index !== panelIndex) {
-			console.log(`Navigation: ${panelIndex} -> ${index}`);
-			// Update the actual panel index
-			setPanelIndex(index);
-			// Add to navigation stack if moving to a new panel
-			setNavigationStack(prev => {
-				// Check if we're already on this panel
-				if (prev[prev.length - 1] !== index) {
-					return [...prev, index];
-				}
-				return prev;
-			});
-		}
-	}, [panelIndex]);
+ 	// Create a custom panel index setter that also updates navigation history and tracks last accessed panel
+ 	const setPanel = useCallback((index) => {
+ 		// Don't add duplicate consecutive entries
+ 		if (index !== panelIndex) {
+ 			console.log(`Navigation: ${panelIndex} -> ${index}`);
+ 			// If trying to navigate to movie/TV detail without a selected item, redirect to home
+ 			if ((index === 1 || index === 2) && !selectedMovieId) {
+ 				index = 0;
+ 			}
+ 			// Update the actual panel index
+ 			setPanelIndex(index);
+ 			// Store the last accessed panel in localStorage (except for login page)
+ 			if (index !== 5) { // Skip saving login page
+ 				window.localStorage.setItem('lastPanelIndex', index.toString());
+ 			}
+ 			// Add to navigation stack if moving to a new panel
+ 			setNavigationStack(prev => {
+ 				// Check if we're already on this panel
+ 				if (prev[prev.length - 1] !== index) {
+ 					return [...prev, index];
+ 				}
+ 				return prev;
+ 			});
+ 			// Close sidebar when navigating away from login panel
+ 			if (index !== 5) {
+ 				onToggleSidebar({ open: false });
+ 			}
+ 		}
+ 	}, [panelIndex, selectedMovieId, onToggleSidebar]);
 
 	// Improved back navigation handler
 	const handleBackNavigation = useCallback(() => {
@@ -239,16 +263,18 @@ const AppBase = ({ open, onToggleSidebar, ...rest }) => {
 		return () => window.removeEventListener("keydown", handleKeyDown);
 	}, [panelIndex, navigationStack.length, handleBackNavigation, setPanel]);
 
-	const onLogout = async () => {
-		try {
-			await StorageService.removeItem("authData");
-			window.localStorage.removeItem("token");
-			setIsLoggedIn(false);
-			setShowLogoutPopup(true);
-		} catch (error) {
-			console.error("Error logging out:", error);
-		}
-	};
+  const onLogout = async () => {
+ 		try {
+ 			await StorageService.removeItem("authData");
+ 			window.localStorage.removeItem("token");
+ 			window.localStorage.removeItem("selectedMovieId");
+ 			setSelectedMovieId(null);
+ 			setIsLoggedIn(false);
+ 			setShowLogoutPopup(true);
+ 		} catch (error) {
+ 			console.error("Error logging out:", error);
+ 		}
+ 	};
 
 	const handlePanelsKeyDown = useCallback((ev) => {
 		// Handle WebOS back button press
@@ -318,7 +344,7 @@ const AppBase = ({ open, onToggleSidebar, ...rest }) => {
 						onMovieSelect={handleMovieSelect}
 					/>
 				</Panel>
-				<Panel>
+				<Panel key={`movie-detail-${isLoggedIn}`}>
 					<MovieDetail
 						selectedMovieId={selectedMovieId}
 						setPanelIndex={setPanel}
@@ -326,7 +352,7 @@ const AppBase = ({ open, onToggleSidebar, ...rest }) => {
 						setVideoPlayerActive={setVideoPlayerActive}
 					/>
 				</Panel>
-				<Panel>
+				<Panel key={`tvshow-detail-${isLoggedIn}`}>
 					<TvShowDetail
 						selectedMovieId={selectedMovieId}
 						setPanelIndex={setPanel}
@@ -357,23 +383,34 @@ const AppBase = ({ open, onToggleSidebar, ...rest }) => {
 							{/* Add future protected panels here */}
 						</>
 					) : (
-						<Login
-							setIsLoggedIn={setIsLoggedIn}
-							setPanelIndex={setPanel}
-						/>
+ 						<Login
+ 							setIsLoggedIn={setIsLoggedIn}
+ 							setPanelIndex={setPanel}
+ 							setShowLoginSuccessPopup={setShowLoginSuccessPopup}
+ 						/>
 					)}
 				</Panel>
 			</Panels>
 
-			<Popup
-				open={showLogoutPopup}
-				onClose={handlePopupClose}
-				noAutoDismiss={false}
-			>
-				Successfully logged out
-			</Popup>
+ 			<Popup
+ 				open={showLogoutPopup}
+ 				onClose={handlePopupClose}
+ 				noAutoDismiss={false}
+ 			>
+ 				Successfully logged out
+ 			</Popup>
+ 			<Popup
+ 				open={showLoginSuccessPopup}
+ 				onClose={() => setShowLoginSuccessPopup(false)}
+ 				closeButton
+ 				spotlightRestrict="self-only"
+ 				style={{ padding: "1rem" }}
+ 			>
+ 				<div>Login Successful! Welcome back.</div>
+ 			</Popup>
 			{!isVideoPlayerActive && (
 				<Sidebar
+					key={isLoggedIn ? 'logged-in' : 'logged-out'}
 					open={open}
 					setPanelIndex={setPanel}
 					onToggleSidebar={onToggleSidebar}

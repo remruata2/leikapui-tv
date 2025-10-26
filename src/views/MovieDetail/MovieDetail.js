@@ -14,13 +14,15 @@ import Spotlight from "@enact/spotlight";
 import css from "./MovieDetail.module.less";
 
 const MovieDetailBase = ({
-	selectedMovieId,
-	setPanelIndex,
-	setVideoPlayerActive,
-}) => {
+ 	selectedMovieId,
+ 	setPanelIndex,
+ 	setVideoPlayerActive,
+ 	isLoggedIn,
+ }) => {
 	const [movie, setMovie] = useState(null);
 	const [user, setUser] = useState(null);
 	const [purchaseStatus, setPurchaseStatus] = useState(null);
+	const [isCheckingPurchase, setIsCheckingPurchase] = useState(true);
 	const [showPlayer, setShowPlayer] = useState(false);
 	const [showRentPopup, setShowRentPopup] = useState(false);
 
@@ -40,12 +42,16 @@ const MovieDetailBase = ({
 		}
 	}, [showPlayer, setVideoPlayerActive]);
 
-	useEffect(() => {
-		const authData = StorageService.getItem("authData");
-		if (authData?.user) {
-			setUser(authData);
-		}
-	}, []);
+ 	useEffect(() => {
+ 		if (isLoggedIn) {
+ 			const authData = StorageService.getItem("authData");
+ 			if (authData?.user) {
+ 				setUser(authData);
+ 			}
+ 		} else {
+ 			setUser(null);
+ 		}
+ 	}, [isLoggedIn]);
 
 	useEffect(() => {
 		if (!selectedMovieId) return;
@@ -61,6 +67,7 @@ const MovieDetailBase = ({
 
 	useEffect(() => {
 		if (user?.user && movie?._id) {
+			setIsCheckingPurchase(true);
 			fetch(
 				`${process.env.REACT_APP_API_URL}/api/purchases/check/${movie._id}`,
 				{
@@ -71,13 +78,17 @@ const MovieDetailBase = ({
 			)
 				.then((response) => response.json())
 				.then((data) => {
-					if (data.hasAccess) {
-						setPurchaseStatus({ hasAccess: true });
-					} else {
-						setPurchaseStatus({ hasAccess: false });
-					}
+					setPurchaseStatus({ hasAccess: data.hasAccess });
 				})
-				.catch((error) => console.error("Error:", error));
+				.catch((error) => {
+					console.error("Error checking purchase status:", error);
+					setPurchaseStatus({ hasAccess: false });
+				})
+				.finally(() => {
+					setIsCheckingPurchase(false);
+				});
+		} else {
+			setIsCheckingPurchase(false);
 		}
 	}, [user, movie]);
 
@@ -133,7 +144,7 @@ const MovieDetailBase = ({
 
 
 
-	const renderActionButton = () => {
+ 	const renderActionButton = () => {
 		if (!user) {
 			return (
 				<Button className={css.loginButton} onClick={handleLoginClick}>
@@ -142,6 +153,13 @@ const MovieDetailBase = ({
 				</Button>
 			);
 		}
+
+		// Don't show button while checking purchase status to avoid showing "Rent Now" prematurely
+		if (isCheckingPurchase) {
+			return null;
+		}
+
+		// Show Watch Now if they have access
 		if (purchaseStatus?.hasAccess) {
 			return (
 				<Button className={css.playButton} onClick={handlePlay}>
@@ -150,6 +168,8 @@ const MovieDetailBase = ({
 				</Button>
 			);
 		}
+
+		// Show Rent Now if they don't have access
 		return (
 			<Button className={css.rentButton} onClick={handleRentClick}>
 				<FaShoppingCart className={css.buttonIcon} />
