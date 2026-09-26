@@ -294,11 +294,8 @@ const AppBase = ({ open, onToggleSidebar, ...rest }) => {
 				// Only show exit dialog on home panel
 				window.webOS.platformBack();
 			}
-		} else {
-			// Handle sidebar toggle
-			onToggleSidebar(ev, { onToggleSidebar, open });
 		}
-	}, [panelIndex, navigationStack.length, handleBackNavigation, setPanel, onToggleSidebar, open]);
+	}, [panelIndex, navigationStack.length, handleBackNavigation, setPanel]);
 
 	const handlePopupClose = () => {
 		setShowLogoutPopup(false);

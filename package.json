@@ -5,10 +5,11 @@
   "author": "",
   "main": "src/index.js",
   "scripts": {
-    "serve": "BROWSERSLIST_IGNORE_OLD_DATA=1 enact serve",
-    "pack": "BROWSERSLIST_IGNORE_OLD_DATA=1 enact pack",
-    "pack-p": "BROWSERSLIST_IGNORE_OLD_DATA=1 enact pack -p",
-    "watch": "BROWSERSLIST_IGNORE_OLD_DATA=1 enact pack --watch",
+    "dev": "cross-env BROWSERSLIST_IGNORE_OLD_DATA=1 enact serve",
+    "serve": "cross-env BROWSERSLIST_IGNORE_OLD_DATA=1 enact serve",
+    "pack": "cross-env BROWSERSLIST_IGNORE_OLD_DATA=1 enact pack",
+    "pack-p": "cross-env BROWSERSLIST_IGNORE_OLD_DATA=1 enact pack -p",
+    "watch": "cross-env BROWSERSLIST_IGNORE_OLD_DATA=1 enact pack --watch",
     "clean": "enact clean",
     "lint": "enact lint .",
     "license": "enact license",
@@ -36,19 +37,19 @@
     "dist/*"
   ],
   "dependencies": {
-    "@enact/core": "^4.8.0",
-    "@enact/i18n": "^4.7.8",
-    "@enact/sandstone": "^2.8.0",
-    "@enact/spotlight": "^4.7.8",
-    "@enact/ui": "^4.7.8",
-    "@enact/webos": "^4.7.8",
+    "@enact/core": "^4.9.8",
+    "@enact/i18n": "^4.9.8",
+    "@enact/sandstone": "^2.9.13",
+    "@enact/spotlight": "^4.9.8",
+    "@enact/ui": "^4.9.8",
+    "@enact/webos": "^4.9.8",
     "dotenv": "^16.4.7",
     "express": "^4.19.2",
     "ilib": "npm:ilib-webos@^14.19.0-webos1",
     "prop-types": "^15.8.1",
     "qrcode.react": "^3.1.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "react-icons": "^5.2.1",
     "react-router-dom": "^6.23.1",
     "video.js": "^8.22.0",
@@ -59,7 +60,8 @@
     "fsevents": "^2.3.2"
   },
   "devDependencies": {
-    "@enact/cli": "^6.1.3",
+    "@enact/cli": "^6.1.4",
+    "cross-env": "^10.1.0",
     "eslint": "^9.38.0",
     "eslint-config-enact-proxy": "^1.0.7"
   }

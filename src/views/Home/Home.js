@@ -5,6 +5,7 @@ import TvShowsCarousel from "../../components/TvShowsCarousel/TvShowsCarousel";
 import Heading from "@enact/sandstone/Heading";
 import Scroller from "@enact/sandstone/Scroller";
 import HomeBanner from "../../components/HomeBanner/HomeBanner";
+import SectionHeader from "../../components/Common/SectionHeader";
 import { useEffect, useRef, useCallback, useState } from "react";
 import Spotlight from "@enact/spotlight";
 
@@ -134,7 +135,7 @@ const Home = ({ setPanelIndex, setSelectedMovieId, panelIndex }) => {
 	}, [handleKeyDown]);
 
 	return (
-		<div data-component-id="home" className={css.homeWrapper}>
+		<div data-component-id="home" data-spotlight-id="home-main" className={css.homeWrapper}>
 			<Scroller
 				ref={scrollerRef}
 				className={css.homeScroller}
@@ -164,9 +165,8 @@ const Home = ({ setPanelIndex, setSelectedMovieId, panelIndex }) => {
 					/>
 					{hasMovies && (
 						<div className={css.section}>
-							<Heading size="large">Movies</Heading>
+							<SectionHeader title="Featured Movies" />
 							<MoviesCarousel
-								className={css.carousel}
 								setPanelIndex={setPanelIndex}
 								setSelectedMovieId={setSelectedMovieId}
 							/>
@@ -174,9 +174,8 @@ const Home = ({ setPanelIndex, setSelectedMovieId, panelIndex }) => {
 					)}
 					{hasTvShows && (
 						<div className={css.section}>
-							<Heading>Tv Shows</Heading>
+							<SectionHeader title="Popular TV Shows" />
 							<TvShowsCarousel
-								className={css.carousel}
 								setPanelIndex={setPanelIndex}
 								setSelectedMovieId={setSelectedMovieId}
 							/>

@@ -1,63 +1,93 @@
-import { useEffect, useState } from "react";
-import { Scroller } from "@enact/sandstone/Scroller";
-import { ImageItem } from "@enact/sandstone/ImageItem";
-import { VirtualGridList } from "@enact/sandstone/VirtualList";
+import { useEffect, useState, useCallback } from "react";
+import Scroller from "@enact/sandstone/Scroller";
+import Spotlight from "@enact/spotlight";
 import SpotlightContainerDecorator from "@enact/spotlight/SpotlightContainerDecorator";
+import MediaCard from "../Common/MediaCard";
+import css from "./TvShowsCarousel.module.less";
 
 const TvShowsCarousel = ({ setPanelIndex, setSelectedMovieId }) => {
-  const [items, setItems] = useState([]);
+	const [items, setItems] = useState([]);
 
-  useEffect(() => {
-    fetch(`${process.env.REACT_APP_API_URL}/api/tvShows`)
-      .then((response) => response.json())
-      .then((data) => setItems(data))
-      .catch((error) => console.error("Error:", error));
-  }, []);
+	useEffect(() => {
+		let isMounted = true;
+		fetch(`${process.env.REACT_APP_API_URL}/api/tvShows`)
+			.then((response) => response.json())
+			.then((data) => {
+				if (isMounted && Array.isArray(data)) {
+					setItems(data);
+				}
+			})
+			.catch((error) => console.error("Error fetching tv shows:", error));
 
-  const itemWidth = window.innerWidth / 4;
+		return () => {
+			isMounted = false;
+		};
+	}, []);
 
-  const handleSelect = (id) => {
-    setSelectedMovieId(id);
-    setPanelIndex(2);
-  };
+	const handleSelect = useCallback(
+		(id) => {
+			if (!id) return;
+			setSelectedMovieId(id);
+			setPanelIndex(2); // TV Show detail panel
+		},
+		[setPanelIndex, setSelectedMovieId]
+	);
 
-  const handleItemClick = (id) => {
-    handleSelect(id);
-  };
+	const handleLeftmostSpotlightLeft = useCallback((ev) => {
+		ev.preventDefault();
+		ev.stopPropagation();
+		const sidebarTarget = document.querySelector('[data-spotlight-id="sidebar-item-0"]');
+		if (sidebarTarget) {
+			if (!Spotlight.focus(sidebarTarget)) {
+				sidebarTarget.focus?.();
+			}
+		} else {
+			Spotlight.focus("sidebar-item-0");
+		}
+	}, []);
 
-  return (
-    <Scroller
-      direction="horizontal"
-      focusableScrollbar
-      spotlightDisabled={false}
-    >
-      <div style={{ height: "300px" }}>
-        <VirtualGridList
-          dataSize={items.length}
-          itemRenderer={({ index: itemIndex, ...rest }) => (
-            <ImageItem
-              {...rest}
-              src={items[itemIndex].horizontal_poster}
-              onClick={() => handleItemClick(items[itemIndex]._id)}
-              spotlightDisabled={false}
-            >
-              {items[itemIndex].show_name}
-            </ImageItem>
-          )}
-          itemSize={{ minWidth: itemWidth, minHeight: 300 }}
-          direction="horizontal"
-          horizontalScrollbar="hidden"
-          spotlightDisabled={false}
-        />
-      </div>
-    </Scroller>
-  );
+	if (!items.length) {
+		return null;
+	}
+
+	return (
+		<div className={css.carouselWrapper}>
+			<Scroller
+				className={css.scroller}
+				direction="horizontal"
+				horizontalScrollbar="hidden"
+				verticalScrollbar="hidden"
+				focusableScrollbar={false}
+				spotlightDisabled={false}
+			>
+				<div className={css.cardsRow}>
+					{items.map((show, index) => (
+						<MediaCard
+							key={show._id || index}
+							poster={show.horizontal_poster || show.vertical_poster}
+							title={show.show_name || show.title}
+							subtitle={
+								show.seasons && show.seasons.length > 0
+									? `${show.seasons.length} Season${show.seasons.length > 1 ? "s" : ""}`
+									: show.duration
+									? `${show.duration} min`
+									: null
+							}
+							spotlightId={`tvshow-card-${index}`}
+							onSpotlightLeft={index === 0 ? handleLeftmostSpotlightLeft : undefined}
+							onClick={() => handleSelect(show._id)}
+						/>
+					))}
+				</div>
+			</Scroller>
+		</div>
+	);
 };
 
 const CarouselDecorator = SpotlightContainerDecorator({
-  enterTo: 'default-element',
-  preserveId: true,
-  continue5WayHold: true
+	enterTo: "default-element",
+	preserveId: true,
+	continue5WayHold: true,
 });
 
 export default CarouselDecorator(TvShowsCarousel);

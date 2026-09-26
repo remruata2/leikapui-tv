@@ -1,0 +1,85 @@
+.cardContainer {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  width: 350px;
+  margin-right: 32px;
+  margin-bottom: 28px;
+  cursor: pointer;
+  outline: none;
+  background: transparent;
+  vertical-align: top;
+
+  &:global(.spottable.spotlight),
+  &:focus,
+  &:hover {
+    .posterBox {
+      transform: scale(1.06);
+      border-color: #ffffff;
+      box-shadow: 0 24px 48px rgba(0, 0, 0, 0.95),
+                  0 0 24px rgba(229, 9, 20, 0.7),
+                  0 0 0 2px #ffffff;
+    }
+
+    .titleBelow {
+      color: #ffffff;
+      font-weight: 800;
+    }
+
+    .metaBelow {
+      color: #e50914;
+      font-weight: 700;
+    }
+  }
+}
+
+.posterBox {
+  position: relative;
+  width: 100%;
+  height: 198px;
+  border-radius: 12px;
+  overflow: hidden;
+  background-color: #1a1d24;
+  border: 2.5px solid transparent;
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.65);
+}
+
+.posterImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.titleBelow {
+  margin-top: 14px;
+  font-size: 26px;
+  font-weight: 700;
+  color: #ffffff;
+  white-space: normal;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  min-height: 64px;
+  padding: 0 2px;
+  letter-spacing: -0.3px;
+  line-height: 1.25;
+  transition: color 0.2s ease;
+}
+
+.metaBelow {
+  font-size: 20px;
+  color: #a0a6b5;
+  margin-top: 6px;
+  padding: 0 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 600;
+  transition: color 0.2s ease;
+}

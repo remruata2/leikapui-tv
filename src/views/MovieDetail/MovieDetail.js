@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import Button from "@enact/sandstone/Button";
+import Spottable from "@enact/spotlight/Spottable";
 import SpotlightContainerDecorator from "@enact/spotlight/SpotlightContainerDecorator";
 import { Popup } from "@enact/sandstone/Popup";
 import {
@@ -12,6 +12,8 @@ import { StorageService } from "../../utils/storage";
 import VideoPlayerComponent from "../../components/VideoPlayer/VideoPlayer";
 import Spotlight from "@enact/spotlight";
 import css from "./MovieDetail.module.less";
+
+const SpottableButton = Spottable("div");
 
 const MovieDetailBase = ({
  	selectedMovieId,
@@ -147,10 +149,10 @@ const MovieDetailBase = ({
  	const renderActionButton = () => {
 		if (!user) {
 			return (
-				<Button className={css.loginButton} onClick={handleLoginClick}>
+				<SpottableButton role="button" className={css.loginButton} onClick={handleLoginClick}>
 					<FaUserCircle className={css.buttonIcon} />
-					Login to Watch
-				</Button>
+					<span>Login to Watch</span>
+				</SpottableButton>
 			);
 		}
 
@@ -162,19 +164,19 @@ const MovieDetailBase = ({
 		// Show Watch Now if they have access
 		if (purchaseStatus?.hasAccess) {
 			return (
-				<Button className={css.playButton} onClick={handlePlay}>
+				<SpottableButton role="button" className={css.playButton} onClick={handlePlay}>
 					<MdPlayCircleFilled className={css.buttonIcon} />
-					Watch Now
-				</Button>
+					<span>Watch Now</span>
+				</SpottableButton>
 			);
 		}
 
 		// Show Rent Now if they don't have access
 		return (
-			<Button className={css.rentButton} onClick={handleRentClick}>
+			<SpottableButton role="button" className={css.rentButton} onClick={handleRentClick}>
 				<FaShoppingCart className={css.buttonIcon} />
-				Rent Now
-			</Button>
+				<span>Rent Now</span>
+			</SpottableButton>
 		);
 	};
 
@@ -282,7 +284,7 @@ const MovieDetailBase = ({
 						mobile app so you can watch it here.
 					</span>
 					<div className={css.rentPopupButtons}>
-						<Button onClick={() => setShowRentPopup(false)}>Close</Button>
+							<SpottableButton role="button" className={css.rentButton} onClick={() => setShowRentPopup(false)}><span>Close</span></SpottableButton>
 					</div>
 				</div>
 			</Popup>
