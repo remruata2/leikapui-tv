@@ -324,7 +324,7 @@ const AppBase = ({ open, onToggleSidebar, ...rest }) => {
 	};
 
 	return (
-		<Row>
+		<Row className={css.app}>
 			<Panels
 				{...rest}
 				onKeyDown={handlePanelsKeyDown}
