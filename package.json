@@ -45,6 +45,7 @@
     "@enact/webos": "^4.9.8",
     "dotenv": "^16.4.7",
     "express": "^4.19.2",
+    "hls.js": "^1.7.3",
     "ilib": "npm:ilib-webos@^14.19.0-webos1",
     "prop-types": "^15.8.1",
     "qrcode.react": "^3.1.0",
