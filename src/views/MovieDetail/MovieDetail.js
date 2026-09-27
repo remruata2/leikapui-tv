@@ -102,8 +102,26 @@ const MovieDetailBase = ({
 		setShowRentPopup(true);
 	};
 
+	const BUNNY_CDN_HOSTNAME = "vz-ec1fe7d3-1f4.b-cdn.net";
+
+	const getFullVideoUrl = (raw) => {
+		if (!raw) return "";
+		const trimmed = String(raw).trim();
+		if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+			return trimmed;
+		}
+		return `https://${BUNNY_CDN_HOSTNAME}/${trimmed}/playlist.m3u8`;
+	};
+
+	const rawVideoSource =
+		movie?.movie_url?.hlsUrl ||
+		movie?.movie_url?.desktop_url ||
+		movie?.movie_url?.mp4Url;
+
+	const videoUrl = getFullVideoUrl(rawVideoSource);
+
 	const handlePlay = () => {
-		if (movie?.movie_url?.hlsUrl) {
+		if (videoUrl) {
 			setShowPlayer(true);
 			// Inform App.js that video player is active (for sidebar visibility)
 			if (typeof setVideoPlayerActive === "function") {
@@ -137,12 +155,6 @@ const MovieDetailBase = ({
 			setTimeout(() => Spotlight.focus(detailScroller), 50);
 		}
 	};
-
-	// Use trailer_url directly as YouTube video ID or URL
-
-	const videoUrl = movie?.movie_url?.hlsUrl;
-
-	console.log("Video URL:", videoUrl);
 
 
 
@@ -252,7 +264,7 @@ const MovieDetailBase = ({
 				</div>
 			</div>
 			{/* Direct Video Player (without popup) */}
-			{showPlayer && movie?.movie_url?.hlsUrl && (
+			{showPlayer && videoUrl && (
 				<div
 					style={{
 						position: "fixed",
@@ -265,7 +277,7 @@ const MovieDetailBase = ({
 					}}
 				>
 					<VideoPlayerComponent
-						source={movie.movie_url.hlsUrl}
+						source={videoUrl}
 						onClose={handleClosePlayer}
 					/>
 				</div>

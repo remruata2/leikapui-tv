@@ -4,11 +4,25 @@ import PropTypes from "prop-types";
 import Hls from "hls.js";
 import { Video, VideoPlayer } from "@enact/sandstone/VideoPlayer";
 
+const BUNNY_CDN_HOSTNAME = "vz-ec1fe7d3-1f4.b-cdn.net";
+
+const resolveSourceUrl = (src) => {
+	if (!src) return "";
+	const trimmed = String(src).trim();
+	if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
+		return trimmed;
+	}
+	// If it's a Bunny video ID / GUID
+	return `https://${BUNNY_CDN_HOSTNAME}/${trimmed}/playlist.m3u8`;
+};
+
 const VideoPlayerComponent = ({ source, onClose }) => {
 	const videoPlayerRef = useRef(null);
+	const resolvedSource = resolveSourceUrl(source);
 
 	const isM3u8 = Boolean(
-		source && (source.includes(".m3u8") || source.includes("/playlist"))
+		resolvedSource &&
+			(resolvedSource.includes(".m3u8") || resolvedSource.includes("/playlist"))
 	);
 
 	// Determine correct source type based on file extension
@@ -20,7 +34,7 @@ const VideoPlayerComponent = ({ source, onClose }) => {
 	};
 
 	useEffect(() => {
-		if (!source) return;
+		if (!resolvedSource) return;
 
 		let hlsInstance = null;
 		let timeoutId = null;
@@ -52,7 +66,7 @@ const VideoPlayerComponent = ({ source, onClose }) => {
 						lowLatencyMode: true,
 						backBufferLength: 90
 					});
-					hls.loadSource(source);
+					hls.loadSource(resolvedSource);
 					hls.attachMedia(video);
 					hls.on(Hls.Events.MANIFEST_PARSED, () => {
 						video.play().catch(() => {});
@@ -74,12 +88,12 @@ const VideoPlayerComponent = ({ source, onClose }) => {
 					});
 					hlsInstance = hls;
 				} else if (video.canPlayType("application/vnd.apple.mpegurl")) {
-					video.src = source;
+					video.src = resolvedSource;
 					video.play().catch(() => {});
 				}
 			} else {
-				if (!video.src || video.src !== source) {
-					video.src = source;
+				if (!video.src || video.src !== resolvedSource) {
+					video.src = resolvedSource;
 					video.play().catch(() => {});
 				}
 			}
@@ -95,7 +109,7 @@ const VideoPlayerComponent = ({ source, onClose }) => {
 				hlsInstance.destroy();
 			}
 		};
-	}, [source, isM3u8]);
+	}, [resolvedSource, isM3u8]);
 
 	if (!source) {
 		return <div>Loading...</div>;
@@ -122,7 +136,7 @@ const VideoPlayerComponent = ({ source, onClose }) => {
 			onBack={onClose}
 		>
 			<Video style={{ width: "100vw", height: "100vh", zIndex: 15 }}>
-				{!isM3u8 && <source src={source} type={getSourceType(source)} />}
+				{!isM3u8 && <source src={resolvedSource} type={getSourceType(resolvedSource)} />}
 			</Video>
 		</VideoPlayer>
 	);
