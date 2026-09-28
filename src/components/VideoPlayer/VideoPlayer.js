@@ -127,15 +127,21 @@ const VideoPlayerComponent = ({ source, onClose }) => {
 			title=""
 			data-spotlight-id="sandstone-video-player"
 			style={{
-				width: "100vw",
-				height: "100vh",
-				overflow: "hidden",
-				zIndex: 10
+				width: "100%",
+				height: "100%",
+				overflow: "hidden"
 			}}
 			// Handle back button press
 			onBack={onClose}
 		>
-			<Video style={{ width: "100vw", height: "100vh", zIndex: 15 }}>
+			<Video
+				style={{
+					width: "100%",
+					height: "100%",
+					objectFit: "contain",
+					objectPosition: "center"
+				}}
+			>
 				{!isM3u8 && <source src={resolvedSource} type={getSourceType(resolvedSource)} />}
 			</Video>
 		</VideoPlayer>

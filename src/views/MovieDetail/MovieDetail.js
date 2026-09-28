@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import Spottable from "@enact/spotlight/Spottable";
 import SpotlightContainerDecorator from "@enact/spotlight/SpotlightContainerDecorator";
 import { Popup } from "@enact/sandstone/Popup";
@@ -263,8 +264,8 @@ const MovieDetailBase = ({
 					</div>
 				</div>
 			</div>
-			{/* Direct Video Player (without popup) */}
-			{showPlayer && videoUrl && (
+			{/* Direct Video Player (rendered via portal into document.body to escape transformed panel container) */}
+			{showPlayer && videoUrl && typeof document !== "undefined" && createPortal(
 				<div
 					style={{
 						position: "fixed",
@@ -272,15 +273,20 @@ const MovieDetailBase = ({
 						left: 0,
 						width: "100vw",
 						height: "100vh",
-						zIndex: 30, // Higher than sidebar (20) when video is not active
+						zIndex: 99999,
 						background: "#000",
+						display: "flex",
+						alignItems: "center",
+						justifyContent: "center",
+						overflow: "hidden"
 					}}
 				>
 					<VideoPlayerComponent
 						source={videoUrl}
 						onClose={handleClosePlayer}
 					/>
-				</div>
+				</div>,
+				document.body
 			)}
 			{/* Rent Popup */}
 			<Popup
